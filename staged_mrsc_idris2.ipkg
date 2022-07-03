@@ -1,0 +1,36 @@
+package staged-mrsc-idris2
+
+depends = contrib
+
+--opts = "-p contrib"
+
+sourcedir = "src"
+
+-- main = Main
+-- executable = staged_mrsc_idris
+
+modules
+  = AbstractSc
+  , Util
+  , AlmostFullRel
+  , BarWhistles
+  , Graphs
+  --, GraphsTheorems
+  , BigStepSc
+  -- , BigStepScTheorems
+  -- , TestScWorld
+  -- , BigStepScTests
+  -- , Cographs
+  -- , CographsTheorems
+  -- , Statistics
+  -- , StatisticsTheorems
+  , Main
+
+-- tests
+--   = SLanguageTests.allTests
+--   , SCheckTests.allTests
+--   , AlgebraTests.allTests
+--   , HETests.allTests
+--   , MSGTests.allTests
+--   , PTBuilderTests.allTests
+--   , ResProgGenTests.allTests

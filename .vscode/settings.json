@@ -1,0 +1,6 @@
+{
+    "idris.autosave": "always",
+    "idris.hoverAction": "Type At",
+    "idris.idris2Mode": true,
+    "idris.idrisPath": "idris2"
+}
