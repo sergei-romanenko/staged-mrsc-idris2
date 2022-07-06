@@ -17,14 +17,14 @@ University of Pereslavl, 2012, 260 p. ISBN 978-5-901795-28-6, pages
 
 import Data.List
 import Data.List.Quantifiers
+import Data.List.Elem
+-- import Data.Fun.Extra
 
 import Util
 import BarWhistles
 import Graphs
 
 %default total
-
-%access public export
 
 -- Now we formulate an idealized model of big-step multi-result
 -- supercompilation.
@@ -73,7 +73,8 @@ import Graphs
 
 infixl 7 <<, <<?, <<*, <<*?
 
-interface BarWhistle a => ScWorld a where
+public export
+interface ScWorld a where
 
   (<<) : (c, c' : a) -> Type
   (<<?) : (c, c' : a) -> Dec (c << c')
@@ -86,6 +87,8 @@ interface BarWhistle a => ScWorld a where
   (<<*?) : (c : a) -> (h : List a) -> Dec (Any (c <<) h)
   c <<*? h = any (c <<?) h
 
+
+{-
 namespace ScWorldWithLabels
 
   -- If we need labeled edges in the graph of configurations,
@@ -98,6 +101,7 @@ namespace ScWorldWithLabels
     (<<) : (c, c' : a) -> Type
     (<<?) : (c, c' : a) -> Dec (c << c')
     develop : (c : a) -> List (List (b, a))
+-}
 
 -- injectLabelsInScWorld
 
@@ -132,15 +136,16 @@ injectLabelsInScWorld w = record
 -- Big-step non-deterministic supercompilation
 --
 
+public export
 data NDSC : ScWorld a => (h : List a) -> (c : a) -> (g : Graph a) -> Type where
-  NDSC_Fold  : ScWorld a => {h : List a} -> {c : a} ->
+  NDSC_Fold  : {s : ScWorld a} -> {h : List a} -> {c : a} ->
     (f : c <<* h) ->
       NDSC h c (Back c)
   NDSC_Build : ScWorld a => {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
     (nf : Not (c <<* h)) ->
     (i : Elem cs (develop c)) ->
-    (s  : Pointwise (NDSC (c :: h)) cs gs) ->
+    (s : Pointwise (NDSC (c :: h)) cs gs) ->
       NDSC h c (Forth c gs)
 
 --
@@ -149,38 +154,44 @@ data NDSC : ScWorld a => (h : List a) -> (c : a) -> (g : Graph a) -> Type where
 
 -- Relational big-step multi-result supercompilation.
 
-data MRSC : ScWorld a => (h : List a) -> (c : a) -> (g : Graph a) -> Type where
-  MRSC_Fold  : ScWorld a => {h : List a} -> {c : a} ->
+public export
+data MRSC : ScWorld a => (w : BarWhistle a) ->
+    (h : List a) -> (c : a) -> (g : Graph a) -> Type where
+  MRSC_Fold  : ScWorld a => (w : BarWhistle a) ->
+    {h : List a} -> {c : a} ->
     (f : c <<* h) ->
-      MRSC h c (Back c)
-  MRSC_Build : ScWorld a => {h : List a} -> {c : a} ->
+      MRSC w h c (Back c)
+  MRSC_Build : ScWorld a => (w : BarWhistle a) ->
+    {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
     (nf : Not (c <<* h)) ->
-    (nw : Not (dangerous h)) ->
+    (nw : Not (w.dangerous h)) ->
     (i : Elem cs (develop c)) ->
-    (s  : Pointwise (MRSC (c :: h)) cs gs) ->
-      MRSC h c (Forth c gs)
+    (p : Pointwise (MRSC w (c :: h)) cs gs) ->
+      MRSC w h c (Forth c gs)
 
 --
 -- Functional big-step multi-result supercompilation.
 -- (The naive version builds Cartesian products immediately.)
 --
 
-naive_mrsc' : ScWorld a =>
-  (h : List a) -> (b : Bar dangerous h) -> (c : a) -> List (Graph a)
-naive_mrsc' h b c with (c <<*? h)
-  | Yes f = [ Back c ]
-  | No nf with (decDangerous h)
-    | Yes w = []
-    | No nw with (b)
-      | Now w = [] -- TODO: void (nw w)
-      | Later bs =
+public export
+naive_mrsc' : ScWorld a => (w : BarWhistle a) ->
+  (h : List a) -> (b : Bar w.dangerous h) -> (c : a) -> List (Graph a)
+naive_mrsc' w h b c with (c <<*? h)
+  _ | Yes f = [ Back c ]
+  _ | No nf with (w.decDangerous h)
+    _ | Yes w' = []
+    _ | No nw' with (b)
+      _ | Now w' = void (nw' w')
+      _ | Later bs =
         map (Forth c)
-          (concatMap (cartesian . map (naive_mrsc' (c :: h) (bs c)))
+          (concatMap (cartesian . map (naive_mrsc' w (c :: h) (bs c)))
                      (develop c))
 
-naive_mrsc : ScWorld a => (c : a) -> List (Graph a)
-naive_mrsc c = naive_mrsc' [] barNil c
+public export
+naive_mrsc : ScWorld a => (w : BarWhistle a) -> (c : a) -> List (Graph a)
+naive_mrsc w c = naive_mrsc' w [] w.barNil c
 
 -- "Lazy" multi-result supercompilation.
 -- (Cartesian products are not immediately built.)
@@ -189,17 +200,20 @@ naive_mrsc c = naive_mrsc' [] barNil c
 -- with get-graphs being an "interpreter" that evaluates the "program"
 -- returned by lazy_mrsc.
 
-lazy_mrsc' : ScWorld a =>
-  (h : List a) -> (b : Bar dangerous h) -> (c : a) -> LazyGraph a
-lazy_mrsc' h b c with (c <<*? h)
-  | Yes f = Stop c
-  | No nf with (decDangerous h)
-    | Yes w = Empty
-    | No nw with (b)
-      | Now w = Empty -- TODO: void (nw w)
-      | Later bs =
-        Build c (map (map (lazy_mrsc' (c :: h) (bs c))) (develop c))
+public export
+lazy_mrsc' : ScWorld a => (w : BarWhistle a) ->
+  (h : List a) -> (b : Bar w.dangerous h) -> (c : a) -> LazyGraph a
+lazy_mrsc' w h b c with (c <<*? h)
+  _ | Yes f = Stop c
+  _ | No nf with (w.decDangerous h)
+    _ | Yes w' = Empty
+    _ | No nw' with (b)
+      _ | Now w' = void (nw' w')
+      _ | Later bs =
+        Build c (map (map (lazy_mrsc' w (c :: h) (bs c))) (develop c))
 
 -- lazy_mrsc
 
-lazy_mrsc : ScWorld a => (c : a) -> LazyGraph a
+public export
+lazy_mrsc : ScWorld a => (w : BarWhistle a) -> (c : a) -> LazyGraph a
+lazy_mrsc w c = lazy_mrsc' w [] w.barNil c

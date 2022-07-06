@@ -84,12 +84,12 @@ data SC : ScStruct => (g, g' : Graph) -> Type where
   SC_Drive : ScStruct => forall g, b, cs.
     (not_f : foldable g b = Nothing) ->
     (not_w : dangerous g b = False) ->
-    (d  : driveStep (conf b) = cs) ->
+    (d : driveStep (conf b) = cs) ->
       g `SC` addChildren g b cs
   SC_Rebuild : ScStruct => forall g, b, cs, c, c'.
     (not_f : foldable g b = Nothing) ->
-    (w  : dangerous g b = True) ->
-    (r  : rebuilding c = c') ->
+    (w : dangerous g b = True) ->
+    (r : rebuilding c = c') ->
       g `SC` rebuild g b c'
 
 {-
@@ -117,13 +117,14 @@ data SC : ScStruct => (g, g' : Graph) -> Type where
 
 -}
 
+export
 data NDSC : ScStruct => (g, g' : Graph) -> Type where
   NDSC_Fold : ScStruct => forall g, b, a.
     (f : foldable g b = Just a) ->
       g `NDSC` fold g b a
   NDSC_Drive : ScStruct => forall g, b, cs.
     (not_f : foldable g b = Nothing) ->
-    (d  : driveStep (conf b) = cs) ->
+    (d : driveStep (conf b) = cs) ->
       g `NDSC` addChildren g b cs
   NDSC_Rebuild : ScStruct => forall g, b, c, c'.
     (not_f : foldable g b = Nothing) ->
@@ -157,15 +158,15 @@ data NDSC : ScStruct => (g, g' : Graph) -> Type where
 -}
 
 data MRSC : ScStruct => (g, g' : Graph) -> Type where
-  MRSC_Fold : ScStruct =>
+  MRSC_Fold : ScStruct => forall g, b, a.
     (f : foldable g b = Just a) ->
       g `MRSC` fold g b a
-  MRSC_Drive : ScStruct =>
+  MRSC_Drive : ScStruct => forall g, b, cs.
     (not_f : foldable g b = Nothing) ->
     (not_w : dangerous g b = False) ->
-    (d  : driveStep (conf b) = cs) ->
+    (d : driveStep (conf b) = cs) ->
       g `MRSC` addChildren g b cs
-  MRSC_Rebuild : ScStruct =>
+  MRSC_Rebuild : ScStruct => forall g, b, c, c'.
     (not_f : foldable g b = Nothing) ->
     (rs : c' `inRebuildings` c) ->
       g `MRSC` rebuild g b c'
@@ -177,7 +178,7 @@ data MRSC : ScStruct => (g, g' : Graph) -> Type where
 -- This model of supercompilation is extremely abstract.
 -- So there is not much to prove.
 
-SC_MRSC : ScStruct => g `SC` g' -> g `MRSC` g'
+SC_MRSC : ScStruct => forall g, g'. g `SC` g' -> g `MRSC` g'
 SC_MRSC (SC_Fold f) =
   MRSC_Fold f
 SC_MRSC (SC_Drive not_f not_w d) =
@@ -185,7 +186,7 @@ SC_MRSC (SC_Drive not_f not_w d) =
 SC_MRSC (SC_Rebuild not_f w r) =
   MRSC_Rebuild not_f (rebuilding_correct r)
 
-MRSC_NDSC : ScStruct => g `MRSC` g' -> g `NDSC` g'
+MRSC_NDSC : ScStruct => forall g, g'. g `MRSC` g' -> g `NDSC` g'
 MRSC_NDSC (MRSC_Fold f) =
   NDSC_Fold f
 MRSC_NDSC (MRSC_Drive not_f not_w d) =
@@ -193,14 +194,14 @@ MRSC_NDSC (MRSC_Drive not_f not_w d) =
 MRSC_NDSC (MRSC_Rebuild not_f rs) =
   NDSC_Rebuild not_f rs
 
-SC_NDSC : ScStruct => g `SC` g' -> g `NDSC` g'
+SC_NDSC : ScStruct => forall g, g'. g `SC` g' -> g `NDSC` g'
 SC_NDSC h = ?SC_NDSC_rhs
 
 -- Transitive closures
 
 data Star : (a -> a -> Type) -> a -> a -> Type where
   Nil : Star r x x
-  (::) : r x y -> Star r y z -> Star r x z
+  (::) : forall r, x, y. r x y -> Star r y z -> Star r x z
 
 (++) : Star r x y -> Star r y z -> Star r x z
 [] ++ s2 = s2
@@ -217,13 +218,13 @@ StarMRSC = Star MRSC
 
 -- Theorems
 
-StarSC_StarMRSC : ScStruct => g `StarSC` g' -> g `StarMRSC` g'
+StarSC_StarMRSC : ScStruct => forall g, g'. g `StarSC` g' -> g `StarMRSC` g'
 StarSC_StarMRSC [] = []
 StarSC_StarMRSC (h :: s) = SC_MRSC h :: StarSC_StarMRSC s
 
-StarMRSC_StarNDSC : ScStruct => g `StarMRSC` g' -> g `StarNDSC` g'
+StarMRSC_StarNDSC : ScStruct => forall g, g'. g `StarMRSC` g' -> g `StarNDSC` g'
 StarMRSC_StarNDSC [] = []
 StarMRSC_StarNDSC (h :: s) = MRSC_NDSC h :: StarMRSC_StarNDSC s
 
-StarSC_StarNDSC : ScStruct =>  g `StarSC` g' -> g `StarNDSC` g'
+StarSC_StarNDSC : ScStruct => forall g, g'.  g `StarSC` g' -> g `StarNDSC` g'
 StarSC_StarNDSC = StarMRSC_StarNDSC . StarSC_StarMRSC

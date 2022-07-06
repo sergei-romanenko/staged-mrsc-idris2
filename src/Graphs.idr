@@ -8,8 +8,6 @@ import Util
 
 %default total
 
-%access public export
-
 --
 -- Graphs of configurations
 --
@@ -41,6 +39,7 @@ import Util
 
 -- Graph
 
+public export
 data Graph : (a : Type) -> Type where
   Back  : (c : a) -> Graph a
   Forth : (c : a) -> (gs : List (Graph a)) -> Graph a
@@ -60,6 +59,7 @@ data Graph : (a : Type) -> Type where
 
 -- LazyGraph
 
+public export
 data LazyGraph : (a : Type) -> Type where
   Empty : LazyGraph a
   Stop  : (c : a) -> LazyGraph a
@@ -177,17 +177,17 @@ mutual
   cl_empty2 : (lss : List (List (LazyGraph a))) ->  List (List (LazyGraph a))
   cl_empty2 [] = []
   cl_empty2 (ls :: lss) with (cl_empty1 ls)
-    | Nothing = cl_empty2 lss
-    | (Just ls') = ls' :: cl_empty2 lss
+    _ | Nothing = cl_empty2 lss
+    _ | (Just ls') = ls' :: cl_empty2 lss
 
   cl_empty1 : (ls : List (LazyGraph a)) -> Maybe (List (LazyGraph a))
   cl_empty1 [] = Just []
   cl_empty1 (l :: ls) with (cl_empty l)
-    | l' with (decEmpty l')
-      | Yes _ = Nothing
-      | No _ with (cl_empty1 ls)
-        | Nothing = Nothing
-        | Just ls' = Just (l' :: ls')
+    _ | l' with (decEmpty l')
+      _ | Yes _ = Nothing
+      _ | No _ with (cl_empty1 ls)
+        _ | Nothing = Nothing
+        _ | Just ls' = Just (l' :: ls')
 
 --
 -- Removing graphs that contain "bad" configurations.
@@ -261,23 +261,23 @@ mutual
   cl_min_size (Stop c) =
     (S Z , Stop c)
   cl_min_size (Build c lss) with (cl_min_size2 lss)
-    | (Z , _) = (Z , Empty)
-    | (k , ls) = (S k , Build c [ ls ])
+    _ | (Z , _) = (Z , Empty)
+    _ | (k , ls) = (S k , Build c [ ls ])
 
   cl_min_size2 : (lss : List (List (LazyGraph a))) ->
     (Nat, List (LazyGraph a))
   cl_min_size2 [] = (Z , [])
   cl_min_size2 (ls :: lss) with (cl_min_size_and ls, cl_min_size2 lss)
-    | (kls1, kls2) = select_min2 kls1 kls2
+    _ | (kls1, kls2) = select_min2 kls1 kls2
 
   cl_min_size_and : (ls : List (LazyGraph a)) ->
     (Nat, List (LazyGraph a))
 
   cl_min_size_and [] = (S Z , [])
   cl_min_size_and (l :: ls) with (cl_min_size l, cl_min_size_and ls)
-   | ((Z, l'), (_, ls')) = (Z , l' :: ls')
-   | ((_, l'), (Z, ls')) = (Z , l' :: ls')
-   | ((i, l'), (j, ls')) = (i + j , l' :: ls')
+   _ | ((Z, l'), (_, ls')) = (Z , l' :: ls')
+   _ | ((_, l'), (Z, ls')) = (Z , l' :: ls')
+   _ | ((i, l'), (j, ls')) = (i + j , l' :: ls')
 
 --
 -- `cl_min_size` is sound:

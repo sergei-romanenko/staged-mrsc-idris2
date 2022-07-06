@@ -59,14 +59,15 @@ open import Relation.Binary.PropositionalEquality as P
 open import Induction.WellFounded
 -}
 
-import Data.Morphisms
+-- import Data.Morphisms
+import Data.Nat
+import Data.Nat.Order.Strict
+import Syntax.PreorderReasoning
 
 import Util
 import AlmostFullRel
 
 %default total
-
-%access public export
 
 -- Bar
 
@@ -76,6 +77,7 @@ import AlmostFullRel
 --     (1) D (a1 :: h) is valid right now; or
 --     (2) for all possible a2 :: a1 :: h either ...
 
+public export
 data Bar : (d : List a -> Type) -> (h : List a) -> Type where
   Now   : d h -> Bar d h
   Later : ((c : a) -> Bar d (c :: h)) -> Bar d h
@@ -87,7 +89,9 @@ data Bar {A : Type} (D : List A -> Type) :
   later : {h : List A} (bs : ∀ c -> Bar D (c :: h)) -> Bar D h
 -}
 
-record RBarWhistle a where
+public export
+record BarWhistle a where
+  constructor MkBarWhistle
   -- Bar whistles deal with sequences of some entities
   -- (which in our model of supercompilations are configurations).
 
@@ -100,6 +104,8 @@ record RBarWhistle a where
   -- (In Coquand's terms, `Bar dangerous` is required to be "an inductive bar".)
   barNil : Bar dangerous []
 
+{- 
+public export
 interface BarWhistle a where
 
   -- Bar whistles deal with sequences of some entities
@@ -113,6 +119,7 @@ interface BarWhistle a where
   -- Bar-induction
   -- (In Coquand's terms, `Bar dangerous` is required to be "an inductive bar".)
   barNil : Bar dangerous []
+-}
 
 {-
 record BarWhistle (A : Type) : Type₁ where
@@ -246,6 +253,44 @@ pathLengthWhistle A l = ⟨ dangerous , monoDangerous , decDangerous , barNil �
   barNil : Bar dangerous []
   barNil = bar l [] (l + zero ≡ l ∋ proj₂ *+.+-identity l)
 -}
+
+public export
+decLTE : (m , n : _) -> Dec (m `LTE` n)
+decLTE Z n = Yes LTEZero
+decLTE (S m') Z = No $ \m_LTE_Z => succNotLTEzero m_LTE_Z
+decLTE (S m') (S n') with (decLTE m' n')
+  _ | Yes m'_LTE_n' = Yes $ LTESucc m'_LTE_n'
+  _ | No not_m'_LTE_n' =
+    No $ \m_LTE_n => not_m'_LTE_n' (fromLteSucc m_LTE_n)
+
+public export
+pathLengthWhistle : (a : Type) -> (l : Nat) -> BarWhistle a
+pathLengthWhistle a l =
+  let
+    dangerous : (h : List a) -> Type
+    dangerous h = l `LTE` length h
+
+    monoDangerous : (c : a) -> (h : List a) -> dangerous h -> dangerous (c :: h)
+    monoDangerous c h dh = lteSuccRight dh
+
+    decDangerous : (h : List a) -> Dec (dangerous h)
+    decDangerous h = l `decLTE` length h
+
+    bar : (m : _) -> (h : List a) -> (d : m + length h = l) ->
+      Bar dangerous h
+    bar Z h d =
+      Now $ rewrite d in reflexive
+    bar (S m) h d =
+      Later $ \c => bar m (c :: h) $ Calc $
+        |~ m + S (length h)
+        ~~ S (m + length h)  ...( sym $ plusSuccRightSucc m (length h) )
+        ~~ l                 ...( d )
+
+    barNil : Bar dangerous []
+    barNil = bar l [] (the (l + 0 = l) $ plusZeroRightNeutral l)
+  in
+  MkBarWhistle dangerous monoDangerous decDangerous barNil
+
 
 --
 -- Bar whistles based on inverse image

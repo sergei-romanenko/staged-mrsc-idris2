@@ -10,13 +10,14 @@ sourcedir = "src"
 -- executable = staged_mrsc_idris
 
 modules
-  = AbstractSc
-  , Util
-  , AlmostFullRel
-  , BarWhistles
-  , Graphs
-  --, GraphsTheorems
-  , BigStepSc
+  = README
+  -- , AbstractSc
+  -- , Util
+  -- , AlmostFullRel
+  -- , BarWhistles
+  -- , Graphs
+  -- , GraphsTheorems
+  -- , BigStepSc
   -- , BigStepScTheorems
   -- , TestScWorld
   -- , BigStepScTests
@@ -24,7 +25,7 @@ modules
   -- , CographsTheorems
   -- , Statistics
   -- , StatisticsTheorems
-  , Main
+  -- , Main
 
 -- tests
 --   = SLanguageTests.allTests

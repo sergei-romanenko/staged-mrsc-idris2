@@ -28,8 +28,6 @@ open import Relation.Binary.PropositionalEquality as P
 
 %default total
 
-%access public export
-
 --
 -- Almost-full relations
 --
@@ -60,11 +58,9 @@ af_mono pq (Later s) =
 -- Well-founded trees
 --
 
-namespace WFT
-
-  data WFT : (a  :  Type) -> Type where
-    Now   : WFT a
-    Later : (s : a -> WFT a) -> WFT a
+data WFT : (a  :  Type) -> Type where
+  WFTNow   : WFT a
+  WFTLater : (s : a -> WFT a) -> WFT a
 
 {-
 data WFT {ℓ} (A  :  Set ℓ) : Set ℓ where

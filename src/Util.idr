@@ -172,9 +172,11 @@ filter-cong {p = p} {q = q} p≗q (x :: xs)
 -- `Elem x xs` and `Elem y ys`.
 --
 
+public export
 data Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type where
   Nil  : Pointwise r [] []
-  (::) : {r : _} -> r x y -> Pointwise r xs ys -> Pointwise r (x :: xs) (y :: ys)
+  (::) : {r : _} -> 
+    r x y -> Pointwise r xs ys -> Pointwise r (x :: xs) (y :: ys)
 
 {-
 --
@@ -297,12 +299,14 @@ concat↔∘Any↔ z g f xs =
 
 -- cartesian2
 
+public export
 cartesian2 : List a -> List (List a) -> List (List a)
 cartesian2 [] yss = []
 cartesian2 (x :: xs) yss = map (x ::) yss ++ cartesian2 xs yss
 
 -- cartesian
 
+public export
 cartesian : List (List a) -> List (List a)
 cartesian [] = [ [] ]
 cartesian (xs :: xss) = cartesian2 xs (cartesian xss)

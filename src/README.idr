@@ -2,18 +2,18 @@ module README
 
 -- A (very abstract) model of small-step supercompilation
 
--- import AbstractSc
+import AbstractSc
 
 -- A model of big-step supercompilation
 
 import Util
--- import AlmostFullRel
--- import BarWhistles
--- import Graphs
+import AlmostFullRel
+import BarWhistles
+import Graphs
 --import GraphsTheorems
--- import BigStepSc
+import BigStepSc
 --import BigStepScTheorems
--- import BigStepScTests
+import BigStepScTests
 --import Cographs
 --import CographsTheorems
 --import Statistics
