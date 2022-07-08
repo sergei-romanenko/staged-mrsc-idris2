@@ -14,7 +14,7 @@ import Graphs
 import BigStepSc
 --import BigStepScTheorems
 import BigStepScTests
---import Cographs
+import Cographs
 --import CographsTheorems
 --import Statistics
 --import StatisticsTheorems

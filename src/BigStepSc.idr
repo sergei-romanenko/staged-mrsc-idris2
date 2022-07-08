@@ -181,9 +181,9 @@ naive_mrsc' : ScWorld a => (w : BarWhistle a) ->
 naive_mrsc' w h b c with (c <<*? h)
   _ | Yes f = [ Back c ]
   _ | No nf with (w.decDangerous h)
-    _ | Yes w' = []
-    _ | No nw' with (b)
-      _ | Now w' = void (nw' w')
+    _ | Yes d = []
+    _ | No nd with (b)
+      _ | Now d = void (nd d)
       _ | Later bs =
         map (Forth c)
           (concatMap (cartesian . map (naive_mrsc' w (c :: h) (bs c)))
@@ -206,9 +206,9 @@ lazy_mrsc' : ScWorld a => (w : BarWhistle a) ->
 lazy_mrsc' w h b c with (c <<*? h)
   _ | Yes f = Stop c
   _ | No nf with (w.decDangerous h)
-    _ | Yes w' = Empty
-    _ | No nw' with (b)
-      _ | Now w' = void (nw' w')
+    _ | Yes d = Empty
+    _ | No nd with (b)
+      _ | Now d = void (nd d)
       _ | Later bs =
         Build c (map (map (lazy_mrsc' w (c :: h) (bs c))) (develop c))
 

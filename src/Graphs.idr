@@ -69,12 +69,15 @@ data LazyGraph : (a : Type) -> Type where
 
 -- decEmpty
 
+public export
 implementation Uninhabited (Empty = Stop c) where
   uninhabited Refl impossible
 
+public export
 implementation Uninhabited (Empty = Build c lss) where
   uninhabited Refl impossible
 
+public export
 decEmpty : (l : LazyGraph c) -> Dec (Empty = l)
 decEmpty Empty = Yes Refl
 decEmpty (Stop c) = No absurd
@@ -145,12 +148,12 @@ mutual
   bad_graph : (bad : a -> Bool) -> (g : Graph a) -> Bool
   bad_graph bad (Back c) = bad c
   bad_graph bad (Forth c gs) =
-    bad c || bad_graphs bad gs
+    bad c || bad_graph_gs bad gs
 
-  bad_graphs : (bad : a -> Bool) -> (gs : List (Graph a)) -> Bool
-  bad_graphs bad [] = False
-  bad_graphs bad (g :: gs) =
-    bad_graph bad g || bad_graphs bad gs
+  bad_graph_gs : (bad : a -> Bool) -> (gs : List (Graph a)) -> Bool
+  bad_graph_gs bad [] = False
+  bad_graph_gs bad (g :: gs) =
+    bad_graph bad g || bad_graph_gs bad gs
 
 -- This filter removes the graphs containing "bad" configurations.
 
@@ -163,6 +166,7 @@ fl_bad_conf bad gs = filter (not . bad_graph bad) gs
 
 -- `cl_empty` removes subtrees that represent empty sets of graphs.
 
+export
 cl_empty_build : (c : a) -> List (List (LazyGraph a)) -> LazyGraph a
 cl_empty_build c [] = Empty
 cl_empty_build c (ls :: lss) = Build c (ls :: lss)
@@ -172,20 +176,20 @@ mutual
   cl_empty : (l : LazyGraph a) -> LazyGraph a
   cl_empty Empty = Empty
   cl_empty (Stop c) = Stop c
-  cl_empty (Build c lss) = cl_empty_build c (cl_empty2 lss)
+  cl_empty (Build c lss) = cl_empty_build c (cl_empty_lss lss)
 
-  cl_empty2 : (lss : List (List (LazyGraph a))) ->  List (List (LazyGraph a))
-  cl_empty2 [] = []
-  cl_empty2 (ls :: lss) with (cl_empty1 ls)
-    _ | Nothing = cl_empty2 lss
-    _ | (Just ls') = ls' :: cl_empty2 lss
+  cl_empty_lss : (lss : List (List (LazyGraph a))) ->  List (List (LazyGraph a))
+  cl_empty_lss [] = []
+  cl_empty_lss (ls :: lss) with (cl_empty_ls ls)
+    _ | Nothing = cl_empty_lss lss
+    _ | (Just ls') = ls' :: cl_empty_lss lss
 
-  cl_empty1 : (ls : List (LazyGraph a)) -> Maybe (List (LazyGraph a))
-  cl_empty1 [] = Just []
-  cl_empty1 (l :: ls) with (cl_empty l)
+  cl_empty_ls : (ls : List (LazyGraph a)) -> Maybe (List (LazyGraph a))
+  cl_empty_ls [] = Just []
+  cl_empty_ls (l :: ls) with (cl_empty l)
     _ | l' with (decEmpty l')
       _ | Yes _ = Nothing
-      _ | No _ with (cl_empty1 ls)
+      _ | No _ with (cl_empty_ls ls)
         _ | Nothing = Nothing
         _ | Just ls' = Just (l' :: ls')
 
@@ -203,19 +207,19 @@ mutual
   cl_bad_conf bad (Stop c) =
     if bad c then Empty else (Stop c)
   cl_bad_conf bad (Build c lss) =
-    if bad c then Empty else (Build c (cl_bad_conf2 bad lss))
+    if bad c then Empty else (Build c (cl_bad_conf_lss bad lss))
 
-  cl_bad_conf2 : (bad : a -> Bool) ->
+  cl_bad_conf_lss : (bad : a -> Bool) ->
     (lss : List (List (LazyGraph a))) -> List (List (LazyGraph a))
-  cl_bad_conf2 bad [] = []
-  cl_bad_conf2 bad (ls :: lss) =
-    map_cl_bad_conf bad ls :: (cl_bad_conf2 bad lss)
+  cl_bad_conf_lss bad [] = []
+  cl_bad_conf_lss bad (ls :: lss) =
+    cl_bad_conf_ls bad ls :: (cl_bad_conf_lss bad lss)
 
-  map_cl_bad_conf : (bad : a -> Bool) ->
+  cl_bad_conf_ls : (bad : a -> Bool) ->
     (ls : List (LazyGraph a)) -> List (LazyGraph a)
-  map_cl_bad_conf bad [] = []
-  map_cl_bad_conf bad (l :: ls) =
-    cl_bad_conf bad l :: map_cl_bad_conf bad ls
+  cl_bad_conf_ls bad [] = []
+  cl_bad_conf_ls bad (l :: ls) =
+    cl_bad_conf bad l :: cl_bad_conf_ls bad ls
 
 --
 -- The graph returned by `cl_bad_conf` may be cleaned by `cl_empty`.
