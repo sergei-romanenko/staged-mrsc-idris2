@@ -22,8 +22,8 @@ import Statistics
 
 -- An instantiation of the model for counter systems
 
---import BigStepCounters
---import Protocol.Synapse
+import Counters
+-- import Protocol.Synapse
 --import Protocol.MSI
 --import Protocol.MOSI
 --import Protocol.MESI

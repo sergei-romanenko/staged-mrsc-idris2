@@ -194,7 +194,7 @@ module BarFanGen
 -- Bar D h is "monotonic" with respect to D.
 --
 
--- bar-mono
+-- bar_mono
 
 {-
 bar-mono : ∀ {A : Type}
@@ -207,6 +207,17 @@ bar-mono D->D′ h (later bs) =
   later (λ c -> bar-mono D->D′ (c :: h) (bs c))
 -}
 
+-- bar_mono
+
+bar_mono :
+  {d, d' : List a -> Type} ->
+  (mono : (h : List a) -> d h -> d' h) ->
+  (h : List a) -> (b : Bar d h) -> Bar d' h
+bar_mono mono h (Now d_h) =
+  Now $ mono h d_h
+bar_mono mono h (Later bs) =
+  Later (\c => bar_mono mono (c :: h) (bs c))
+
 -- bar-⊎
 
 {-
@@ -216,6 +227,14 @@ bar-⊎ : {A : Type}
   Bar D h -> Bar (D ∪ P) h
 bar-⊎ h b = bar-mono inj₁ h b
 -}
+
+export
+bar_either :
+  {d, p : List a -> Type} ->
+  (h : List a) ->
+  Bar d h -> Bar (\h => Either (d h) (p h)) h
+bar_either h b = bar_mono (\h', dh' => Left dh') h b
+
 
 --
 -- Bar whistles based on the length of the sequence

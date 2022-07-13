@@ -202,6 +202,7 @@ mutual
 
 mutual
 
+  export
   cl_bad_conf : (bad : a -> Bool) -> (l : LazyGraph a) -> LazyGraph a
   cl_bad_conf bad Empty = Empty
   cl_bad_conf bad (Stop c) =

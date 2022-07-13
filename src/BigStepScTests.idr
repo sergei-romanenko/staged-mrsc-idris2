@@ -9,6 +9,8 @@ import BarWhistles
 import BigStepSc
 import Decidable.Equality
 
+%default total
+
 -- ScWorld Conf3
 
 -- This is a silly world with 3 possible configurations.
@@ -57,34 +59,46 @@ conf3_rebuildings : Conf3 -> List Conf3
 conf3_rebuildings C0 = [C1]
 conf3_rebuildings _  = []
 
-ScWorld Conf3 where
-  c << c' = (c = c')
-  c <<? c' = decEq c c'
-  develop c = [ conf3_drive c ] ++ map (:: []) (conf3_rebuildings c)
+%hint
+Sc3 : ScWorld Conf3
+Sc3 =
+  let
+    IsFoldableTo : (c, c' : Conf3) -> Type
+    IsFoldableTo c c' = (c = c')
+
+    decIsFoldableTo : (c, c' : Conf3) -> Dec (IsFoldableTo c c')
+    decIsFoldableTo c c' = decEq c c'
+
+    develop : (c : Conf3) -> List (List Conf3)
+    develop c = [ conf3_drive c ] ++ map (:: []) (conf3_rebuildings c)
+  in
+  MkScWorld IsFoldableTo decIsFoldableTo develop
 
 -- NDSC
 
 %hint
-not_f1 : Any (Equal C0) [] -> Void
-not_f1 (Here x) impossible
-not_f1 (There x) impossible
+not_f1 : Any (IsFoldableTo Sc3 C0) [] -> Void
+not_f1 (Here _) impossible
+not_f1 (There _) impossible
 
 %hint
-not_f2 : Any (Equal C1) [C0] -> Void
+not_f2 : Any (IsFoldableTo Sc3 C1) [C0] -> Void
 not_f2 (Here Refl) impossible
 not_f2 (There (Here x)) impossible
 not_f2 (There (There x)) impossible
 
-not_f3 : Any (Equal C2) [C0] -> Void
+%hint
+not_f3 : Any (IsFoldableTo Sc3 C2) [C0] -> Void
 not_f3 (Here Refl) impossible
-not_f3 (There (Here x)) impossible
-not_f3 (There (There x)) impossible
+not_f3 (There (Here _)) impossible
+not_f3 (There (There _)) impossible
 
-not_f4 : Any (Equal C1) [C2, C0] -> Void
+%hint
+not_f4 : Any (IsFoldableTo Sc3 C1) [C2, C0] -> Void
 not_f4 (Here Refl) impossible
 not_f4 (There (Here Refl)) impossible
-not_f4 (There (There (Here x))) impossible
-not_f4 (There (There (There x))) impossible
+not_f4 (There (There (Here _))) impossible
+not_f4 (There (There (There _))) impossible
 
 w3graph1 : NDSC [] C0 $
   Forth C0 [
@@ -106,17 +120,17 @@ w3graph2 =
       NDSC_Fold (There (Here Refl))]]
 
 
-plw4 : BarWhistle Conf3
-plw4 = pathLengthWhistle Conf3 4
+Plw4 : BarWhistle Conf3
+Plw4 = pathLengthWhistle Conf3 4
 
-test_naive_mrsc : naive_mrsc BigStepScTests.plw4 C0 = [
+test_naive_mrsc : naive_mrsc Sc3 Plw4 C0 = [
   Forth C0 [
     Forth C1 [Back C0],
     Forth C2 [Forth C1 [Back C0]]],
     Forth C0 [Forth C1 [Back C0]]]
 test_naive_mrsc = Refl
 
-test_lazy_mrsc : lazy_mrsc BigStepScTests.plw4 C0 =
+test_lazy_mrsc : lazy_mrsc Sc3 Plw4 C0 =
   Build C0 [
     [
       Build C1 [[Stop C0]],
@@ -124,7 +138,6 @@ test_lazy_mrsc : lazy_mrsc BigStepScTests.plw4 C0 =
     [
       Build C1 [[Stop C0]]]]
 test_lazy_mrsc = Refl
-
 
 --
 -- This stuff might be useful just for testing purposes...

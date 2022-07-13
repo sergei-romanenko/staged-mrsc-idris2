@@ -71,22 +71,25 @@ import Graphs
 
 -- ScWorld
 
-infixl 7 <<, <<?, <<*, <<*?
+-- infixl 7 <<, <<?, <<*, <<*?
 
 public export
-interface ScWorld a where
+record ScWorld a where
+  constructor MkScWorld
 
-  (<<) : (c, c' : a) -> Type
-  (<<?) : (c, c' : a) -> Dec (c << c')
+  IsFoldableTo : (c, c' : a) -> Type
+  decIsFoldableTo : (c, c' : a) -> Dec (IsFoldableTo c c')
   develop : (c : a) -> List (List a)
 
-  (<<*) : (c : a) -> (h : List a) -> Type
-  c <<* h = Any (c <<) h
+public export
+IsFoldableToHistory : (s : ScWorld a) ->
+  (c : a) -> (h : List a) -> Type
+IsFoldableToHistory s c h = Any (IsFoldableTo s c) h
 
-  --(<<*?) : (c : a) -> (h : List a) -> Dec (c <<* h)
-  (<<*?) : (c : a) -> (h : List a) -> Dec (Any (c <<) h)
-  c <<*? h = any (c <<?) h
-
+public export
+decIsFoldableToHistory : (s : ScWorld a) ->
+  (c : a) -> (h : List a) -> Dec (Any (IsFoldableTo s c) h)
+decIsFoldableToHistory s c h = any (decIsFoldableTo s c) h
 
 {-
 namespace ScWorldWithLabels
@@ -137,14 +140,16 @@ injectLabelsInScWorld w = record
 --
 
 public export
-data NDSC : ScWorld a => (h : List a) -> (c : a) -> (g : Graph a) -> Type where
-  NDSC_Fold  : {s : ScWorld a} -> {h : List a} -> {c : a} ->
-    (f : c <<* h) ->
+data NDSC : {auto s : ScWorld a} ->
+    (h : List a) -> (c : a) -> (g : Graph a) -> Type where
+  NDSC_Fold  : {auto s : ScWorld a} -> {h : List a} -> {c : a} ->
+    (f : IsFoldableToHistory s c h) ->
       NDSC h c (Back c)
-  NDSC_Build : ScWorld a => {h : List a} -> {c : a} ->
+  NDSC_Build : {auto s : ScWorld a} ->
+      {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
-    (nf : Not (c <<* h)) ->
-    (i : Elem cs (develop c)) ->
+    (nf : Not (IsFoldableToHistory s c h)) ->
+    (i : Elem cs (s.develop c)) ->
     (s : Pointwise (NDSC (c :: h)) cs gs) ->
       NDSC h c (Forth c gs)
 
@@ -155,20 +160,20 @@ data NDSC : ScWorld a => (h : List a) -> (c : a) -> (g : Graph a) -> Type where
 -- Relational big-step multi-result supercompilation.
 
 public export
-data MRSC : ScWorld a => (w : BarWhistle a) ->
+data MRSC : {auto s : ScWorld a} -> {w : BarWhistle a} ->
     (h : List a) -> (c : a) -> (g : Graph a) -> Type where
-  MRSC_Fold  : ScWorld a => (w : BarWhistle a) ->
+  MRSC_Fold  : {auto s : ScWorld a} -> {w : BarWhistle a} ->
     {h : List a} -> {c : a} ->
-    (f : c <<* h) ->
-      MRSC w h c (Back c)
-  MRSC_Build : ScWorld a => (w : BarWhistle a) ->
+    (f : IsFoldableToHistory s c h) ->
+      MRSC h c (Back c)
+  MRSC_Build : {auto s : ScWorld a} -> {w : BarWhistle a} ->
     {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
-    (nf : Not (c <<* h)) ->
+    (nf : Not (IsFoldableToHistory s c h)) ->
     (nw : Not (w.dangerous h)) ->
-    (i : Elem cs (develop c)) ->
-    (p : Pointwise (MRSC w (c :: h)) cs gs) ->
-      MRSC w h c (Forth c gs)
+    (i : Elem cs (s.develop c)) ->
+    (p : Pointwise (MRSC (c :: h)) cs gs) ->
+      MRSC h c (Forth c gs)
 
 --
 -- Functional big-step multi-result supercompilation.
@@ -176,9 +181,9 @@ data MRSC : ScWorld a => (w : BarWhistle a) ->
 --
 
 public export
-naive_mrsc' : ScWorld a => (w : BarWhistle a) ->
+naive_mrsc' : (s : ScWorld a) -> (w : BarWhistle a) ->
   (h : List a) -> (b : Bar w.dangerous h) -> (c : a) -> List (Graph a)
-naive_mrsc' w h b c with (c <<*? h)
+naive_mrsc' s w h b c with (decIsFoldableToHistory s c h)
   _ | Yes f = [ Back c ]
   _ | No nf with (w.decDangerous h)
     _ | Yes d = []
@@ -186,12 +191,12 @@ naive_mrsc' w h b c with (c <<*? h)
       _ | Now d = void (nd d)
       _ | Later bs =
         map (Forth c)
-          (concatMap (cartesian . map (naive_mrsc' w (c :: h) (bs c)))
-                     (develop c))
+          (concatMap (cartesian . map (naive_mrsc' s w (c :: h) (bs c)))
+                     (s.develop c))
 
 public export
-naive_mrsc : ScWorld a => (w : BarWhistle a) -> (c : a) -> List (Graph a)
-naive_mrsc w c = naive_mrsc' w [] w.barNil c
+naive_mrsc : (s : ScWorld a) -> (w : BarWhistle a) -> (c : a) -> List (Graph a)
+naive_mrsc s w c = naive_mrsc' s w [] w.barNil c
 
 -- "Lazy" multi-result supercompilation.
 -- (Cartesian products are not immediately built.)
@@ -201,19 +206,19 @@ naive_mrsc w c = naive_mrsc' w [] w.barNil c
 -- returned by lazy_mrsc.
 
 public export
-lazy_mrsc' : ScWorld a => (w : BarWhistle a) ->
+lazy_mrsc' : (s : ScWorld a) -> (w : BarWhistle a) ->
   (h : List a) -> (b : Bar w.dangerous h) -> (c : a) -> LazyGraph a
-lazy_mrsc' w h b c with (c <<*? h)
+lazy_mrsc' s w h b c with (decIsFoldableToHistory s c h)
   _ | Yes f = Stop c
   _ | No nf with (w.decDangerous h)
     _ | Yes d = Empty
     _ | No nd with (b)
       _ | Now d = void (nd d)
       _ | Later bs =
-        Build c (map (map (lazy_mrsc' w (c :: h) (bs c))) (develop c))
+        Build c (map (map (lazy_mrsc' s w (c :: h) (bs c))) (s.develop c))
 
 -- lazy_mrsc
 
 public export
-lazy_mrsc : ScWorld a => (w : BarWhistle a) -> (c : a) -> LazyGraph a
-lazy_mrsc w c = lazy_mrsc' w [] w.barNil c
+lazy_mrsc : (s : ScWorld a) ->  (w : BarWhistle a) -> (c : a) -> LazyGraph a
+lazy_mrsc s w c = lazy_mrsc' s w [] w.barNil c

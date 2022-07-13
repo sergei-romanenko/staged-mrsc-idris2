@@ -5,6 +5,7 @@ import BarWhistles
 import Graphs
 import BigStepSc
 
+%default total
 
 --
 -- Counting without generation

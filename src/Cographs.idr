@@ -10,6 +10,8 @@ import BarWhistles
 import Graphs
 import BigStepSc
 
+%default total
+
 --
 -- Lazy cographs of configurations
 --
@@ -50,32 +52,33 @@ decEmpty8 (Build8 x lss) = No absurd
 
 mutual
 
-  build_graph8_c : ScWorld a => (h : List a) -> (c : a) -> LazyGraph8 a
-  build_graph8_c h c with (c <<*? h)
+  build_graph8_c : (s : ScWorld a) ->
+    (h : List a) -> (c : a) -> LazyGraph8 a
+  build_graph8_c s h c with (decIsFoldableToHistory s c h)
     _ | Yes f = Stop8 c
-    _ | No nf =
-      Build8 c (build_graph8_css h c (develop c))
+    _ | No nf = Build8 c (build_graph8_css s h c (s.develop c))
 
-  build_graph8_css : ScWorld a => (h : List a) -> (c : a) ->
+  build_graph8_css : (s : ScWorld a) ->
+    (h : List a) -> (c : a) ->
     (css : List (List a)) -> List (List (LazyGraph8 a))
-  build_graph8_css h c [] = []
-  build_graph8_css h c (cs :: css) =
-    build_graph8_cs (c :: h) cs :: build_graph8_css h c css
+  build_graph8_css s h c [] = []
+  build_graph8_css s h c (cs :: css) =
+    build_graph8_cs s (c :: h) cs :: build_graph8_css s h c css
 
-  build_graph8_cs : ScWorld a => (h : List a) -> (cs : List a) ->
+  build_graph8_cs : (s : ScWorld a) -> (h : List a) -> (cs : List a) ->
     List (LazyGraph8 a)
-  build_graph8_cs h [] = []
-  build_graph8_cs h (c :: cs) =
-    build_graph8_c h c :: build_graph8_cs h cs
+  build_graph8_cs s h [] = []
+  build_graph8_cs s h (c :: cs) =
+    build_graph8_c s h c :: build_graph8_cs s h cs
 
-build_graph8 : ScWorld a => (c : a) -> LazyGraph8 a
-build_graph8 c = build_graph8_c [] c
+build_graph8 : (s : ScWorld a) -> (c : a) -> LazyGraph8 a
+build_graph8 s c = build_graph8_c s [] c
 
 -- prune_graph8
 
 mutual
 
-  prune_graph8_l : ScWorld a => (w : BarWhistle a) ->
+  prune_graph8_l : (w : BarWhistle a) ->
     (h : List a) -> (b : Bar w.dangerous h) -> (l : LazyGraph8 a) ->
     LazyGraph a
   prune_graph8_l w h b Empty8 = Empty
@@ -87,14 +90,14 @@ mutual
       _ | Later bs =
         Build c (map (prune_graph8_ls w (c :: h) (bs c)) lss)
 
-  prune_graph8_ls : ScWorld a => (w : BarWhistle a) ->
+  prune_graph8_ls : (w : BarWhistle a) ->
     (h : List a) -> (b : Bar w.dangerous h) -> (ls : List (LazyGraph8 a)) ->
     List (LazyGraph a)
   prune_graph8_ls w h b [] = []
   prune_graph8_ls w h b (l :: ls) =
     prune_graph8_l w h b l :: prune_graph8_ls w h b ls
 
-prune_graph8 : ScWorld a => (w : BarWhistle a) -> (l : LazyGraph8 a) ->
+prune_graph8 : (w : BarWhistle a) -> (l : LazyGraph8 a) ->
   LazyGraph a
 prune_graph8 w l = prune_graph8_l w [] w.barNil l
 
@@ -122,6 +125,7 @@ prune_graph8 w l = prune_graph8_l w [] w.barNil l
 
 mutual
 
+  export
   cl8_bad_conf : (bad : a -> Bool) -> (l : LazyGraph8 a) -> LazyGraph8 a
   cl8_bad_conf bad Empty8 =
     Empty8

@@ -74,6 +74,10 @@ module ×⊎ {k ℓ} = CommutativeSemiring (×⊎-CommutativeSemiring k ℓ)
 open Membership-≡
 -}
 
+import Data.List
+import Control.Function
+import Data.List.Quantifiers
+
 %default total
 
 {-
@@ -177,6 +181,47 @@ data Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type where
   Nil  : Pointwise r [] []
   (::) : {r : _} -> 
     r x y -> Pointwise r xs ys -> Pointwise r (x :: xs) (y :: ys)
+
+public export
+Uninhabited (Pointwise r [] (y :: ys)) where
+  uninhabited [] impossible
+  uninhabited (x :: z) impossible
+
+public export
+Uninhabited (Pointwise r (x :: xs) []) where
+  uninhabited [] impossible
+  uninhabited (x :: xs) impossible
+
+decPointwise : {r : a -> b -> Type} -> (dec : (x : a) -> (y : b) -> Dec(r x y)) ->
+  (xs : List a) -> (ys :List b) -> Dec (Pointwise r xs ys)
+decPointwise dec [] [] = Yes []
+decPointwise dec [] (y :: ys) = No absurd
+decPointwise dec (x :: xs) [] = No absurd
+decPointwise dec (x :: xs) (y :: ys) with (dec x y)
+  _ | Yes r_x_y with (decPointwise dec xs ys)
+    _ | Yes pw = Yes (r_x_y :: pw)
+    _ | No npw = No $ \(_ :: pw) => npw pw
+  _ | No nr_x_y = No $ \(r_x_y :: _) => nr_x_y r_x_y
+
+{- 
+public export
+Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type
+Pointwise r xs ys = All (uncurry r) (zip xs ys)
+-}
+
+{- 
+pw_corr12 : Pointwise r xs ys -> Pointwise' r xs ys
+pw_corr12 [] = []
+pw_corr12 (rxy :: pw) = rxy :: pw_corr12 pw
+-}
+
+{- 
+decPointwise : {r : a -> b -> Type} -> (dec : (x : a) -> (y : b) -> Dec(r x y)) ->
+  (xs : List a) -> (ys :List b) -> Dec (Pointwise r xs ys)
+decPointwise dec xs ys =
+  all (\(x, y) => dec x y) (zip xs ys)
+-}
+
 
 {-
 --
