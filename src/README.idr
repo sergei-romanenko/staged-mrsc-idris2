@@ -23,14 +23,14 @@ import Statistics
 -- An instantiation of the model for counter systems
 
 import Counters
--- import Protocol.Synapse
---import Protocol.MSI
---import Protocol.MOSI
---import Protocol.MESI
---import Protocol.MOESI
---import Protocol.Illinois
---import Protocol.Berkley
---import Protocol.Firefly
---import Protocol.Futurebus
---import Protocol.Xerox
---import Protocol.DataRace
+import Protocols.Synapse
+--import Protocols.MSI
+--import Protocols.MOSI
+--import Protocols.MESI
+--import Protocols.MOESI
+--import Protocols.Illinois
+--import Protocols.Berkley
+--import Protocols.Firefly
+--import Protocols.Futurebus
+--import Protocols.Xerox
+--import Protocols.DataRace

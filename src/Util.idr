@@ -75,6 +75,7 @@ open Membership-≡
 -}
 
 import Data.List
+import Data.Vect
 import Control.Function
 import Data.List.Quantifiers
 
@@ -342,14 +343,12 @@ concat↔∘Any↔ z g f xs =
 -- Cartesian product
 --
 
--- cartesian2
+-- cartesian
 
 public export
 cartesian2 : List a -> List (List a) -> List (List a)
 cartesian2 [] yss = []
 cartesian2 (x :: xs) yss = map (x ::) yss ++ cartesian2 xs yss
-
--- cartesian
 
 public export
 cartesian : List (List a) -> List (List a)

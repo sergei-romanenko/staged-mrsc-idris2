@@ -89,11 +89,27 @@ decEmpty (Build c lss) = No absurd
 
 mutual
 
+
+  public export
   unroll : (l : LazyGraph a) -> List (Graph a)
   unroll Empty = []
   unroll (Stop c) = [ Back c ]
   unroll (Build c lss) =
-    map (Forth c) (concatMap (cartesian . (map (assert_total unroll))) lss)
+    -- map (Forth c) (concatMap (cartesian . (map (assert_total unroll))) lss)
+    map (Forth c) (unroll_lss lss)
+
+  public export
+  unroll_lss : (lss : List (List (LazyGraph a))) -> List (List (Graph a))
+  unroll_lss [] = []
+  unroll_lss (ls :: lss) = cartesian (unroll_ls ls) ++ unroll_lss lss
+
+  -- `unroll_ls` has only been introduced to make the termination
+  -- checker happy. Actually, it is equivalent to `map unroll`.
+
+  public export
+  unroll_ls : (ls : List (LazyGraph a)) -> List (List (Graph a))
+  unroll_ls [] = []
+  unroll_ls (l :: ls) = unroll l :: unroll_ls ls
 
 --
 -- Usually, we are not interested in the whole bag `unroll l`.
@@ -173,17 +189,20 @@ cl_empty_build c (ls :: lss) = Build c (ls :: lss)
 
 mutual
 
+  public export
   cl_empty : (l : LazyGraph a) -> LazyGraph a
   cl_empty Empty = Empty
   cl_empty (Stop c) = Stop c
   cl_empty (Build c lss) = cl_empty_build c (cl_empty_lss lss)
 
+  public export
   cl_empty_lss : (lss : List (List (LazyGraph a))) ->  List (List (LazyGraph a))
   cl_empty_lss [] = []
   cl_empty_lss (ls :: lss) with (cl_empty_ls ls)
     _ | Nothing = cl_empty_lss lss
     _ | (Just ls') = ls' :: cl_empty_lss lss
 
+  public export
   cl_empty_ls : (ls : List (LazyGraph a)) -> Maybe (List (LazyGraph a))
   cl_empty_ls [] = Just []
   cl_empty_ls (l :: ls) with (cl_empty l)
@@ -202,7 +221,7 @@ mutual
 
 mutual
 
-  export
+  public export
   cl_bad_conf : (bad : a -> Bool) -> (l : LazyGraph a) -> LazyGraph a
   cl_bad_conf bad Empty = Empty
   cl_bad_conf bad (Stop c) =
@@ -210,12 +229,14 @@ mutual
   cl_bad_conf bad (Build c lss) =
     if bad c then Empty else (Build c (cl_bad_conf_lss bad lss))
 
+  public export
   cl_bad_conf_lss : (bad : a -> Bool) ->
     (lss : List (List (LazyGraph a))) -> List (List (LazyGraph a))
   cl_bad_conf_lss bad [] = []
   cl_bad_conf_lss bad (ls :: lss) =
     cl_bad_conf_ls bad ls :: (cl_bad_conf_lss bad lss)
 
+  public export
   cl_bad_conf_ls : (bad : a -> Bool) ->
     (ls : List (LazyGraph a)) -> List (LazyGraph a)
   cl_bad_conf_ls bad [] = []
@@ -226,6 +247,7 @@ mutual
 -- The graph returned by `cl_bad_conf` may be cleaned by `cl_empty`.
 --
 
+public export
 cl_empty_and_bad : (bad : a -> Bool) -> (l : LazyGraph a) -> LazyGraph a
 cl_empty_and_bad bad = cl_empty . cl_bad_conf bad
 
@@ -235,10 +257,12 @@ cl_empty_and_bad bad = cl_empty . cl_bad_conf bad
 
 mutual
 
+  public export
   graph_size  : (g : Graph a) -> Nat
   graph_size (Back c) = S Z
   graph_size (Forth c gs) = S (graph_size1 gs)
 
+  public export
   graph_size1 : (gs : List (Graph a)) -> Nat
   graph_size1 [] = Z
   graph_size1 (g :: gs) = graph_size g + graph_size1 gs
@@ -248,18 +272,21 @@ mutual
 
 -- We use a trick: ∞ is represented by 0 in (0 , Empty).
 
+public export
 select_min2 : (kx1, kx2 : (Nat, a)) -> (Nat, a)
 select_min2 (Z, _) (k2, x2) = (k2, x2)
 select_min2 (k1, x1) (Z, _) = (k1, x1)
 select_min2 (k1, x1) (k2, x2) =
   if k1 <= k2 then (k1, x1) else (k2, x2)
 
+public export
 select_min : (c : a) -> (kxs : List (Nat, a)) -> (Nat, a)
 select_min c [] = (Z , c)
 select_min c (kgs :: kgss) = foldl select_min2 kgs kgss
 
 mutual
 
+  public export
   cl_min_size : (l : LazyGraph a) -> (Nat, LazyGraph a)
   cl_min_size Empty =
     (Z , Empty)
@@ -269,15 +296,16 @@ mutual
     _ | (Z , _) = (Z , Empty)
     _ | (k , ls) = (S k , Build c [ ls ])
 
+  public export
   cl_min_size2 : (lss : List (List (LazyGraph a))) ->
     (Nat, List (LazyGraph a))
   cl_min_size2 [] = (Z , [])
   cl_min_size2 (ls :: lss) with (cl_min_size_and ls, cl_min_size2 lss)
     _ | (kls1, kls2) = select_min2 kls1 kls2
 
+  public export
   cl_min_size_and : (ls : List (LazyGraph a)) ->
     (Nat, List (LazyGraph a))
-
   cl_min_size_and [] = (S Z , [])
   cl_min_size_and (l :: ls) with (cl_min_size l, cl_min_size_and ls)
    _ | ((Z, l'), (_, ls')) = (Z , l' :: ls')

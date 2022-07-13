@@ -28,16 +28,19 @@ import BigStepSc
 
 mutual
 
+  public export
   length_unroll : (l : LazyGraph a) -> Nat
   length_unroll Empty = 0
   length_unroll (Stop c) = 1
   length_unroll (Build c lss) = length_unroll_lss lss
 
+  public export
   length_unroll_lss : (lss : List (List (LazyGraph a))) -> Nat
   length_unroll_lss [] = 0
   length_unroll_lss (ls :: lss) =
     length_unroll_ls ls + length_unroll_lss lss
 
+  public export
   length_unroll_ls : (ls : List (LazyGraph a)) -> Nat
   length_unroll_ls [] = 1
   length_unroll_ls (l :: ls) = length_unroll l * length_unroll_ls ls
@@ -53,17 +56,20 @@ mutual
 
 mutual
 
-    size_unroll : (l : LazyGraph a) -> (Nat, Nat)
-    size_unroll Empty = (0 , 0)
-    size_unroll (Stop c) = (1, 1)
-    size_unroll (Build c lss) = size_unroll_lss lss
+  public export
+  size_unroll : (l : LazyGraph a) -> (Nat, Nat)
+  size_unroll Empty = (0 , 0)
+  size_unroll (Stop c) = (1, 1)
+  size_unroll (Build c lss) = size_unroll_lss lss
 
-    size_unroll_lss : (lss : List (List (LazyGraph a))) -> (Nat, Nat)
-    size_unroll_lss [] = (0, 0)
-    size_unroll_lss (ls :: lss) with (size_unroll_ls ls, size_unroll_lss lss)
-      _ | ((k', n'), (k, n)) = (k' + k , k' + n' + n)
+  public export
+  size_unroll_lss : (lss : List (List (LazyGraph a))) -> (Nat, Nat)
+  size_unroll_lss [] = (0, 0)
+  size_unroll_lss (ls :: lss) with (size_unroll_ls ls, size_unroll_lss lss)
+    _ | ((k', n'), (k, n)) = (k' + k , k' + n' + n)
 
-    size_unroll_ls : (ls : List (LazyGraph a)) -> (Nat, Nat)
-    size_unroll_ls [] = ?size_unroll_ls_rhs_0
-    size_unroll_ls (l:: ls) with (size_unroll l, size_unroll_ls ls)
-      _ | ((k', n'), (k, n)) = (k' * k , k' * n + k * n')
+  public export
+  size_unroll_ls : (ls : List (LazyGraph a)) -> (Nat, Nat)
+  size_unroll_ls [] = ?size_unroll_ls_rhs_0
+  size_unroll_ls (l:: ls) with (size_unroll l, size_unroll_ls ls)
+    _ | ((k', n'), (k, n)) = (k' * k , k' * n + k * n')
