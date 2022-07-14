@@ -149,7 +149,7 @@ data NDSC : {auto s : ScWorld a} ->
       {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
     (nf : Not (IsFoldableToHistory s c h)) ->
-    (i : Elem cs (s.develop c)) ->
+    (i : Elem cs (develop s c)) ->
     (s : Pointwise (NDSC (c :: h)) cs gs) ->
       NDSC h c (Forth c gs)
 
@@ -160,18 +160,18 @@ data NDSC : {auto s : ScWorld a} ->
 -- Relational big-step multi-result supercompilation.
 
 public export
-data MRSC : {auto s : ScWorld a} -> {w : BarWhistle a} ->
+data MRSC : {auto s : ScWorld a} -> {auto w : BarWhistle a} ->
     (h : List a) -> (c : a) -> (g : Graph a) -> Type where
-  MRSC_Fold  : {auto s : ScWorld a} -> {w : BarWhistle a} ->
+  MRSC_Fold  : {auto s : ScWorld a} -> {auto w : BarWhistle a} ->
     {h : List a} -> {c : a} ->
     (f : IsFoldableToHistory s c h) ->
       MRSC h c (Back c)
-  MRSC_Build : {auto s : ScWorld a} -> {w : BarWhistle a} ->
+  MRSC_Build : {auto s : ScWorld a} -> {auto w : BarWhistle a} ->
     {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
     (nf : Not (IsFoldableToHistory s c h)) ->
-    (nw : Not (w.dangerous h)) ->
-    (i : Elem cs (s.develop c)) ->
+    (nw : Not (dangerous w h)) ->
+    (i : Elem cs (develop s c)) ->
     (p : Pointwise (MRSC (c :: h)) cs gs) ->
       MRSC h c (Forth c gs)
 
@@ -182,10 +182,10 @@ data MRSC : {auto s : ScWorld a} -> {w : BarWhistle a} ->
 
 public export
 naive_mrsc' : (s : ScWorld a) -> (w : BarWhistle a) ->
-  (h : List a) -> (b : Bar w.dangerous h) -> (c : a) -> List (Graph a)
+  (h : List a) -> (b : Bar (dangerous w) h) -> (c : a) -> List (Graph a)
 naive_mrsc' s w h b c with (decIsFoldableToHistory s c h)
   _ | Yes f = [ Back c ]
-  _ | No nf with (w.decDangerous h)
+  _ | No nf with (decDangerous w h)
     _ | Yes d = []
     _ | No nd with (b)
       _ | Now d = void (nd d)
@@ -207,15 +207,15 @@ naive_mrsc s w c = naive_mrsc' s w [] w.barNil c
 
 public export
 lazy_mrsc' : (s : ScWorld a) -> (w : BarWhistle a) ->
-  (h : List a) -> (b : Bar w.dangerous h) -> (c : a) -> LazyGraph a
+  (h : List a) -> (b : Bar (dangerous w) h) -> (c : a) -> LazyGraph a
 lazy_mrsc' s w h b c with (decIsFoldableToHistory s c h)
   _ | Yes f = Stop c
-  _ | No nf with (w.decDangerous h)
+  _ | No nf with (decDangerous w h)
     _ | Yes d = Empty
     _ | No nd with (b)
       _ | Now d = void (nd d)
       _ | Later bs =
-        Build c (map (map (lazy_mrsc' s w (c :: h) (bs c))) (s.develop c))
+        Build c (map (map (lazy_mrsc' s w (c :: h) (bs c))) (develop s c))
 
 -- lazy_mrsc
 
