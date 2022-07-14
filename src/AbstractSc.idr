@@ -41,7 +41,7 @@ interface ScStruct where
   addChildren : (g : Graph) -> (b : Node) -> (cs : DriveInfo) -> Graph
 
   rebuilding : (c : Configuration) -> Configuration
-  inRebuildings : (c', c : Configuration) -> Type
+  InRebuildings : (c', c : Configuration) -> Type
   rebuild : (g : Graph) -> (b : Node) -> (c' : Configuration) -> Graph
 
   dangerous : (g : Graph) -> (b : Node) -> Bool
@@ -49,7 +49,7 @@ interface ScStruct where
   foldable_correct : forall g, a, b.
     foldable g b = Just a -> Foldable g b a
   rebuilding_correct : forall c, c'.
-    rebuilding c = c' -> c' `inRebuildings` c
+    rebuilding c = c' -> c' `InRebuildings` c
 
 {-
 ### (a) SC: Deterministic (traditional) supercompilation ###
@@ -128,7 +128,7 @@ data NDSC : ScStruct => (g, g' : Graph) -> Type where
       g `NDSC` addChildren g b cs
   NDSC_Rebuild : ScStruct => forall g, b, c, c'.
     (not_f : foldable g b = Nothing) ->
-    (rs : c' `inRebuildings` c) ->
+    (rs : c' `InRebuildings` c) ->
       g `NDSC` rebuild g b c'
 
 {-
@@ -168,7 +168,7 @@ data MRSC : ScStruct => (g, g' : Graph) -> Type where
       g `MRSC` addChildren g b cs
   MRSC_Rebuild : ScStruct => forall g, b, c, c'.
     (not_f : foldable g b = Nothing) ->
-    (rs : c' `inRebuildings` c) ->
+    (rs : c' `InRebuildings` c) ->
       g `MRSC` rebuild g b c'
 
 -- Now let us prove some "natural" theorems.
@@ -195,7 +195,12 @@ MRSC_NDSC (MRSC_Rebuild not_f rs) =
   NDSC_Rebuild not_f rs
 
 SC_NDSC : ScStruct => forall g, g'. g `SC` g' -> g `NDSC` g'
-SC_NDSC h = ?SC_NDSC_rhs
+SC_NDSC (SC_Fold f) =
+  NDSC_Fold f
+SC_NDSC (SC_Drive not_f not_w d) =
+  NDSC_Drive not_f d
+SC_NDSC (SC_Rebuild not_f w r) =
+  NDSC_Rebuild not_f (rebuilding_correct r)
 
 -- Transitive closures
 
