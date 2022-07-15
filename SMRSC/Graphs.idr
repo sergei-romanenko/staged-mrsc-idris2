@@ -2,9 +2,9 @@
 -- Graphs of configurations
 --
 
-module Graphs
+module SMRSC.Graphs
 
-import Util
+import SMRSC.Util
 
 %default total
 
@@ -88,7 +88,6 @@ decEmpty (Build c lss) = No absurd
 -- the `LazyGraph a` by executing commands recorded in the `LazyGraph a`.
 
 mutual
-
 
   public export
   unroll : (l : LazyGraph a) -> List (Graph a)
@@ -320,3 +319,38 @@ mutual
 --     k = graph_size (hd (unroll l'))
 --
 -- TODO: prove this formally
+
+--
+-- Pretty-printing
+--
+
+export
+Show a => Show (Graph a) where
+  show (Back c) = "Back " ++ show c
+  show (Forth c gs) =
+    "Forth " ++ show c ++ " [" ++ show' "" gs ++ "]"
+    where
+      show' : String -> List (Graph a) -> String
+      show' acc [] = acc
+      show' acc (g :: []) = acc ++ show g
+      show' acc (g :: gs) = show' (acc ++ show g ++ ", ") gs
+
+-- Graph pretty-printer
+
+graph_pp_g : Show a => (g : Graph a) -> (indent : String) -> String
+graph_pp_g (Back c) indent =
+  indent ++ "|__" ++ show c ++ "*"
+graph_pp_g (Forth c gs) indent =
+  graph_pp_gs (indent ++ "|__" ++ show c) gs indent
+  where
+    graph_pp_gs : (acc : String) ->
+      (gs : List (Graph a)) -> (indent : String) -> String
+    graph_pp_gs acc [] indent = acc
+    graph_pp_gs acc (g :: gs) indent =
+      graph_pp_gs
+        (acc ++ "\n  " ++ indent ++ "|\n" ++ graph_pp_g g (indent ++ "  "))
+        gs indent
+
+export
+graph_pp : Show a => (g : Graph a) -> String
+graph_pp g = graph_pp_g g ""

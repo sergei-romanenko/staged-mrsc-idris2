@@ -1,4 +1,4 @@
-module BigStepSc
+module SMRSC.BigStepSc
 
 {- ### Schemes of different types of big-step supercompilation ### -}
 
@@ -20,9 +20,9 @@ import Data.List.Quantifiers
 import Data.List.Elem
 -- import Data.Fun.Extra
 
-import Util
-import BarWhistles
-import Graphs
+import SMRSC.Util
+import SMRSC.BarWhistles
+import SMRSC.Graphs
 
 %default total
 

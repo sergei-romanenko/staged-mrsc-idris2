@@ -1,9 +1,9 @@
-module Statistics
+module SMRSC.Statistics
 
-import Util
-import BarWhistles
-import Graphs
-import BigStepSc
+import SMRSC.Util
+import SMRSC.BarWhistles
+import SMRSC.Graphs
+import SMRSC.BigStepSc
 
 %default total
 

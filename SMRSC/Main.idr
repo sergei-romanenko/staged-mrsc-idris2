@@ -1,4 +1,4 @@
-module Main
+module SMRSC.Main
 
 {-
 import Data.SortedMap
@@ -11,6 +11,11 @@ import PTBuilder
 import ResProgGen
 import PrettyPrinter
 -}
+
+import Data.List
+
+import SMRSC.Counters
+import SMRSC.Protocols.Synapse
 
 -- The process tree is returned by the supercompilers
 -- just to enable the user to take a look at it.

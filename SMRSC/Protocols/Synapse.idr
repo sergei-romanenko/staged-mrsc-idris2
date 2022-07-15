@@ -1,13 +1,14 @@
-module Protocols.Synapse
+module SMRSC.Protocols.Synapse
 
+import Data.List
 import Data.Vect
 
-import BarWhistles
-import Graphs
-import BigStepSc
-import Counters
-import Cographs
-import Statistics
+import SMRSC.BarWhistles
+import SMRSC.Graphs
+import SMRSC.BigStepSc
+import SMRSC.Counters
+import SMRSC.Cographs
+import SMRSC.Statistics
 
 %default total
 
@@ -85,4 +86,12 @@ lgraph_min_size = cl_min_size lgraph
 -- su_lgraph_min_size : size_unroll (snd Synapse.lgraph_min_size) = (1 , 9)
 -- su_lgraph_min_size = Refl
 
+export
+graph_min_size : List (Graph (Conf 3))
 graph_min_size = unroll (snd lgraph_min_size)
+
+export
+run : IO ()
+run = do
+  putStrLn "Synapse"
+  putStrLn "Nothing to do!"

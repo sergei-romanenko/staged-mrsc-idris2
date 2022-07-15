@@ -1,4 +1,4 @@
-module Counters
+module SMRSC.Counters
 
 import Data.Nat
 import Data.Vect
@@ -9,10 +9,10 @@ import Syntax.PreorderReasoning
 import Decidable.Decidable
 
 -- import Util
-import BarWhistles
-import Graphs
-import BigStepSc
-import Cographs
+import SMRSC.BarWhistles
+import SMRSC.Graphs
+import SMRSC.BigStepSc
+import SMRSC.Cographs
 
 %default total
 
@@ -24,6 +24,11 @@ public export
 data NW : Type where
   ω   : NW
   (^) : (i : Nat) -> NW
+
+public export
+Show NW where
+  show ω = "W"
+  show (^ i) = show i
 
 -- (+)
 

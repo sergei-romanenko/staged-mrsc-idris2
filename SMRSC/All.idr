@@ -1,4 +1,4 @@
-module README
+module SMRSC.All
 
 -- A (very abstract) model of small-step supercompilation
 
@@ -6,24 +6,24 @@ import AbstractSc
 
 -- A model of big-step supercompilation
 
-import Util
-import AlmostFullRel
-import BarWhistles
-import Graphs
+import SMRSC.Util
+import SMRSC.AlmostFullRel
+import SMRSC.BarWhistles
+import SMRSC.Graphs
 --import GraphsTheorems
-import BigStepSc
+import SMRSC.BigStepSc
 --import BigStepScTheorems
-import BigStepScTests
-import Cographs
+import SMRSC.BigStepScTests
+import SMRSC.Cographs
 --import CographsTheorems
-import Statistics
+import SMRSC.Statistics
 --import StatisticsTheorems
--- import Main
+import SMRSC.Main
 
 -- An instantiation of the model for counter systems
 
-import Counters
-import Protocols.Synapse
+import SMRSC.Counters
+import SMRSC.Protocols.Synapse
 --import Protocols.MSI
 --import Protocols.MOSI
 --import Protocols.MESI

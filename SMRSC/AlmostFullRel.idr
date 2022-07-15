@@ -1,4 +1,4 @@
-module AlmostFullRel
+module SMRSC.AlmostFullRel
 
 {-
 open import Level

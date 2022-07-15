@@ -1,13 +1,13 @@
-module BigStepScTests
+module SMRSC.BigStepScTests
 
 import Data.List.Quantifiers
 import Data.List.Elem
-
-import Util
-import Graphs
-import BarWhistles
-import BigStepSc
 import Decidable.Equality
+
+import SMRSC.Util
+import SMRSC.Graphs
+import SMRSC.BarWhistles
+import SMRSC.BigStepSc
 
 %default total
 
@@ -166,3 +166,20 @@ mutual
 
 Eq a => Eq (Graph a) where
   (==) = eqGraph
+
+export
+test_graph : Graph Conf3
+test_graph =
+  Forth C0 [
+    Forth C1 [Back C0],
+    Forth C2 [Forth C1 [Back C0]]]
+
+Show Conf3 where
+  show C0 = "C0"
+  show C1 = "C1"
+  show C2 = "C2"
+
+export
+pp_test_graph : IO ()
+pp_test_graph = do
+  putStrLn (graph_pp test_graph)

@@ -9,7 +9,7 @@ http://www.cairn.info/revue-internationale-de-philosophie-2004-4-page-483.htm
 http://www.cairn.info/load_pdf.php?ID_ARTICLE=RIP_230_0483
 -}
 
-module BarWhistles
+module SMRSC.BarWhistles
 
 {-
 open import Level

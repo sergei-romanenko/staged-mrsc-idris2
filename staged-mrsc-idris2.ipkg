@@ -4,13 +4,13 @@ depends = contrib
 
 --opts = "-p contrib"
 
-sourcedir = "src"
+sourcedir = "./"
 
--- main = Main
--- executable = staged_mrsc_idris
+main = SMRSC.Main
+executable = smrsc
 
 modules
-  = README
+  = SMRSC.All
   -- , AbstractSc
   -- , Util
   -- , AlmostFullRel
@@ -25,13 +25,5 @@ modules
   -- , CographsTheorems
   -- , Statistics
   -- , StatisticsTheorems
-  -- , Main
-
--- tests
---   = SLanguageTests.allTests
---   , SCheckTests.allTests
---   , AlgebraTests.allTests
---   , HETests.allTests
---   , MSGTests.allTests
---   , PTBuilderTests.allTests
---   , ResProgGenTests.allTests
+  -- , MRSC.Protocols.Synapse
+  -- , MRSC.Main
