@@ -4,7 +4,6 @@ import Data.Nat
 import Data.Vect
 import Decidable.Equality
 import Data.List.Quantifiers
-import Data.Nat.Order.Strict
 import Syntax.PreorderReasoning
 import Decidable.Decidable
 

@@ -11,19 +11,21 @@ executable = smrsc
 
 modules
   = SMRSC.All
-  -- , AbstractSc
-  -- , Util
-  -- , AlmostFullRel
-  -- , BarWhistles
-  -- , Graphs
-  -- , GraphsTheorems
-  -- , BigStepSc
-  -- , BigStepScTheorems
-  -- , TestScWorld
-  -- , BigStepScTests
-  -- , Cographs
-  -- , CographsTheorems
-  -- , Statistics
-  -- , StatisticsTheorems
-  -- , MRSC.Protocols.Synapse
-  -- , MRSC.Main
+  , SMRSC.AbstractSc
+  , SMRSC.Util
+  , SMRSC.AlmostFullRel
+  , SMRSC.BarWhistles
+  , SMRSC.Graphs
+  -- , SMRSC.GraphsTheorems
+  , SMRSC.BigStepSc
+  -- , SMRSC.BigStepScTheorems
+  -- , SMRSC.TestScWorld
+  , SMRSC.BigStepScTests
+  , SMRSC.Cographs
+  -- , SMRSC.CographsTheorems
+  , SMRSC.Statistics
+  -- , SMRSC.StatisticsTheorems
+  , SMRSC.Protocols.Synapse
+  -- , SMRSC.Main
+  , SMRSC.Tests.UnitTest
+  , SMRSC.Tests.Cartesian

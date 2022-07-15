@@ -1,4 +1,4 @@
-module AbstractSc
+module SMRSC.AbstractSc
 
 {- ### Schemes of different types of supercompilation ### -}
 

@@ -2,7 +2,7 @@ module SMRSC.All
 
 -- A (very abstract) model of small-step supercompilation
 
-import AbstractSc
+import SMRSC.AbstractSc
 
 -- A model of big-step supercompilation
 

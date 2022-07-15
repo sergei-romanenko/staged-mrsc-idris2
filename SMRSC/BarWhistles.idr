@@ -59,13 +59,11 @@ open import Relation.Binary.PropositionalEquality as P
 open import Induction.WellFounded
 -}
 
--- import Data.Morphisms
 import Data.Nat
-import Data.Nat.Order.Strict
 import Syntax.PreorderReasoning
 
-import Util
-import AlmostFullRel
+import SMRSC.Util
+import SMRSC.AlmostFullRel
 
 %default total
 

@@ -1,0 +1,6 @@
+/**/build
+/**/output
+/**/*.so
+/**/*.dylib
+/**/*.dll
+/failures

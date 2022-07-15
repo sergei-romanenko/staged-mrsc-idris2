@@ -1,4 +1,6 @@
 *.ibc
+*.idr~
 *.o
 *.log
+
 /build

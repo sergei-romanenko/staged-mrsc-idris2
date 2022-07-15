@@ -174,6 +174,7 @@ test_graph =
     Forth C1 [Back C0],
     Forth C2 [Forth C1 [Back C0]]]
 
+export
 Show Conf3 where
   show C0 = "C0"
   show C1 = "C1"
