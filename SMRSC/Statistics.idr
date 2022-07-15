@@ -49,7 +49,7 @@ mutual
 -- Counting nodes in collections of graphs
 --
 -- Let us find a function `size_unroll`, such that
---   size_unroll(l) == (length(unroll(l)) , sum (map (graph_size) (unroll(l))))
+--   size_unroll(l) == length(unroll l) , sum (map graph_size (unroll l)))
 --
 
 -- size_unroll

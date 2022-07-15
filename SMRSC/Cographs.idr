@@ -57,7 +57,7 @@ mutual
     (h : List a) -> (c : a) -> LazyGraph8 a
   build_graph8_c s h c with (decIsFoldableToHistory s c h)
     _ | Yes f = Stop8 c
-    _ | No nf = Build8 c (build_graph8_css s h c (s.develop c))
+    _ | No nf = Build8 c (build_graph8_css s h c (develop s c))
 
   public export
   build_graph8_css : (s : ScWorld a) ->
@@ -84,11 +84,11 @@ mutual
 
   public export
   prune_graph8_l : (w : BarWhistle a) ->
-    (h : List a) -> (b : Bar w.dangerous h) -> (l : LazyGraph8 a) ->
+    (h : List a) -> (b : Bar (dangerous w) h) -> (l : LazyGraph8 a) ->
     LazyGraph a
   prune_graph8_l w h b Empty8 = Empty
   prune_graph8_l w h b (Stop8 c) = Stop c
-  prune_graph8_l w h b (Build8 c lss) with (w.decDangerous h)
+  prune_graph8_l w h b (Build8 c lss) with (decDangerous w h)
     _ | Yes d = Empty
     _ | No nd with (b)
       _ | Now d = void (nd d)
@@ -97,7 +97,7 @@ mutual
 
   public export
   prune_graph8_ls : (w : BarWhistle a) ->
-    (h : List a) -> (b : Bar w.dangerous h) -> (ls : List (LazyGraph8 a)) ->
+    (h : List a) -> (b : Bar (dangerous w) h) -> (ls : List (LazyGraph8 a)) ->
     List (LazyGraph a)
   prune_graph8_ls w h b [] = []
   prune_graph8_ls w h b (l :: ls) =
@@ -106,7 +106,7 @@ mutual
 public export
 prune_graph8 : (w : BarWhistle a) -> (l : LazyGraph8 a) ->
   LazyGraph a
-prune_graph8 w l = prune_graph8_l w [] w.barNil l
+prune_graph8 w l = prune_graph8_l w [] (barNil w) l
 
 --
 -- Now that we have docomposed `lazy-mrsc`
@@ -199,11 +199,11 @@ mutual
 
   public export
   prune0_graph8_l : (s : ScWorld a) ->  (w : BarWhistle a) ->
-    (h : List a) -> (b : Bar w.dangerous h) -> (l : LazyGraph8 a) ->
+    (h : List a) -> (b : Bar (dangerous w) h) -> (l : LazyGraph8 a) ->
     LazyGraph a
   prune0_graph8_l s w h b Empty8 = Empty
   prune0_graph8_l s w h b (Stop8 c) = Stop c
-  prune0_graph8_l s w h b (Build8 c lss) with (w.decDangerous h)
+  prune0_graph8_l s w h b (Build8 c lss) with (decDangerous w h)
       _ | Yes d = Empty
       _ | No nd with (b)
         _ | Now d = void (nd d)
@@ -212,7 +212,7 @@ mutual
 
   public export
   prune0_graph8_lss :  (s : ScWorld a) ->  (w : BarWhistle a) ->
-    (h : List a) -> (b : Bar w.dangerous h) ->
+    (h : List a) -> (b : Bar (dangerous w) h) ->
     (lss : List (List (LazyGraph8 a))) -> List (List (LazyGraph a))
   prune0_graph8_lss s w h b [] = []
   prune0_graph8_lss s w h b (ls :: lss) with (prune0_graph8_ls s w h b ls)
@@ -221,7 +221,7 @@ mutual
 
   public export
   prune0_graph8_ls : (s : ScWorld a) ->  (w : BarWhistle a) ->
-    (h : List a) -> (b : Bar w.dangerous h) ->
+    (h : List a) -> (b : Bar (dangerous w) h) ->
     (ls : List (LazyGraph8 a)) -> Maybe (List (LazyGraph a))
   prune0_graph8_ls s w h b [] = Just []
   prune0_graph8_ls s w h b (l :: ls) with (prune0_graph8_l s w h b l)
@@ -234,4 +234,4 @@ mutual
 public export
 prune0_graph8 : (s : ScWorld a) ->  (w : BarWhistle a) ->
   (l : LazyGraph8 a) -> LazyGraph a
-prune0_graph8 s w l = prune0_graph8_l s w [] w.barNil l
+prune0_graph8 s w l = prune0_graph8_l s w [] (barNil w) l

@@ -192,11 +192,11 @@ naive_mrsc' s w h b c with (decIsFoldableToHistory s c h)
       _ | Later bs =
         map (Forth c)
           (concatMap (cartesian . map (naive_mrsc' s w (c :: h) (bs c)))
-                     (s.develop c))
+                     (develop s c))
 
 public export
 naive_mrsc : (s : ScWorld a) -> (w : BarWhistle a) -> (c : a) -> List (Graph a)
-naive_mrsc s w c = naive_mrsc' s w [] w.barNil c
+naive_mrsc s w c = naive_mrsc' s w [] (barNil w) c
 
 -- "Lazy" multi-result supercompilation.
 -- (Cartesian products are not immediately built.)
@@ -221,4 +221,4 @@ lazy_mrsc' s w h b c with (decIsFoldableToHistory s c h)
 
 public export
 lazy_mrsc : (s : ScWorld a) ->  (w : BarWhistle a) -> (c : a) -> LazyGraph a
-lazy_mrsc s w c = lazy_mrsc' s w [] w.barNil c
+lazy_mrsc s w c = lazy_mrsc' s w [] (barNil w) c

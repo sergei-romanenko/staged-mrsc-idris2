@@ -259,12 +259,12 @@ mutual
   public export
   graph_size  : (g : Graph a) -> Nat
   graph_size (Back c) = S Z
-  graph_size (Forth c gs) = S (graph_size1 gs)
+  graph_size (Forth c gs) = S (graph_size_gs gs)
 
   public export
-  graph_size1 : (gs : List (Graph a)) -> Nat
-  graph_size1 [] = Z
-  graph_size1 (g :: gs) = graph_size g + graph_size1 gs
+  graph_size_gs : (gs : List (Graph a)) -> Nat
+  graph_size_gs [] = Z
+  graph_size_gs (g :: gs) = graph_size g + graph_size_gs gs
 
 -- Now we define a cleaner that produces a lazy graph
 -- representing the smallest graph (or the empty set of graphs).
