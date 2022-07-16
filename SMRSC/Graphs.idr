@@ -160,6 +160,7 @@ mutual
 
 mutual
 
+  export
   bad_graph : (bad : a -> Bool) -> (g : Graph a) -> Bool
   bad_graph bad (Back c) = bad c
   bad_graph bad (Forth c gs) =
@@ -321,7 +322,57 @@ mutual
 -- TODO: prove this formally
 
 --
--- Pretty-printing
+-- Eq (Graph a)
+--
+
+mutual
+  eq_g : Eq a => (g1, g2 : Graph a) -> Bool
+  eq_g (Back c1) (Back c2) = c1 == c2
+  eq_g (Forth c1 gs1) (Forth c2 gs2) = c1 == c2 && eq_gs gs1 gs2
+  eq_g _ _ = False
+
+  eq_gs : Eq a => (g1, g2 : List(Graph a)) -> Bool
+  eq_gs [] [] = True
+  eq_gs (g1 :: gs1) (g2 :: gs2) = eq_g g1 g2 && eq_gs gs1 gs2
+  eq_gs _ _ = False
+
+export
+Eq a => Eq (Graph a) where
+  (==) = eq_g
+
+--
+-- Eq (LazyGraph a)
+--
+
+export
+Eq a => Eq (LazyGraph a) where
+  Empty == Empty = True
+  Empty == Stop c = False
+  Empty == Build c lss = False
+  Stop c1 == Empty = False
+  Stop c1 == Stop c2 = c1 == c2
+  Stop c1 == Build c2 lss2 = False
+  Build c1 lss1 == Empty = False
+  Build c1 lss1 == Stop c2 = False
+  Build c1 lss1 == Build c2 lss2 =
+    c1 == c2 && eq_lss lss1 lss2
+      where
+        eq_lss : (lss1, lss2 : List (List (LazyGraph a))) -> Bool
+        eq_lss [] [] = True
+        eq_lss [] (ls2 :: lss2) = False
+        eq_lss (ls1 :: lss1) [] = False
+        eq_lss (ls1 :: lss1) (ls2 :: lss2) =
+          eq_ls ls1 ls2 && eq_lss lss1 lss2
+            where
+              eq_ls : (ls1, ls2 : List (LazyGraph a)) -> Bool
+              eq_ls [] [] = True
+              eq_ls [] (l2 :: ls2) = False
+              eq_ls (l1 :: ls1) [] = False
+              eq_ls (l1 :: ls1) (l2 :: ls2) =
+                l1 == l2 && eq_ls ls1 ls2
+
+--
+-- Show
 --
 
 export
@@ -332,8 +383,37 @@ Show a => Show (Graph a) where
     where
       show' : String -> List (Graph a) -> String
       show' acc [] = acc
-      show' acc (g :: []) = acc ++ show g
-      show' acc (g :: gs) = show' (acc ++ show g ++ ", ") gs
+      show' acc (g :: gs) with (acc ++ show g)
+        show' acc (g :: []) | acc' = acc'
+        show' acc (g :: gs) | acc' = show' (acc' ++ ", ") gs
+
+mutual
+
+  show_l : Show a => LazyGraph a -> String
+  show_l Empty = "Empty"
+  show_l (Stop c) = "Stop " ++ show c
+  show_l (Build c lss) =
+    "Build " ++ show c ++ " [" ++ show_lss "" lss ++ "]"
+
+  show_lss : Show a => String -> List (List (LazyGraph a)) -> String
+  show_lss acc [] = acc
+  show_lss acc (ls :: lss) with (acc ++ "[" ++ show_ls "" ls ++ "]")
+    show_lss acc (ls :: []) | acc' = acc'
+    show_lss acc (ls :: lss) | acc' = show_lss (acc' ++ ", ") lss
+
+  show_ls : Show a => String -> List (LazyGraph a) -> String
+  show_ls acc [] = acc
+  show_ls acc (l :: ls) with (acc ++ show_l l)
+    show_ls acc (l :: []) | acc' = acc'
+    show_ls acc (l :: ls) | acc' = show_ls (acc' ++ ", ") ls
+
+export
+Show a => Show (LazyGraph a) where
+  show = show_l
+
+--
+-- Pretty-printing
+--
 
 -- Graph pretty-printer
 

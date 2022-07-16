@@ -7,7 +7,7 @@ import Test.Golden
 allTests : TestPool
 allTests = MkTestPool "Staged MRSC" [] Default
   [ "Util"
-  , "BigStepSc"
+  , "Graphs"
   ]
 
 main : IO ()
@@ -15,5 +15,4 @@ main = runner
   [ testPaths "smrsc" allTests
   ] where
     testPaths : String -> TestPool -> TestPool
-    -- testPaths dir = record { testCases $= map ((dir ++ "/") ++) }
     testPaths dir = { testCases $= map ((dir ++ "/") ++) }

@@ -1,7 +1,7 @@
 module SMRSC.Tests.Cartesian
 
-import SMRSC.Util
 import SMRSC.Tests.UnitTest
+import SMRSC.Util
 
 testCartesian : (msg : String) ->
   (g : List (List Nat)) -> (e : List (List Nat)) -> IO ()

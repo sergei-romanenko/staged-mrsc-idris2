@@ -1,4 +1,4 @@
-module SMRSC.BigStepScTests
+module SMRSC.Tests.BigStepSc
 
 import Data.List.Quantifiers
 import Data.List.Elem
@@ -151,36 +151,7 @@ Eq Conf3 where
   C2 == C2 = True
   c  == c' = False
 
-mutual
-  eqGraph : Eq a => (g1, g2 : Graph a) -> Bool
-  eqGraph (Back c1) (Back c2) = c1 == c2
-  eqGraph (Forth c1 gs1) (Forth c2 gs2) = c1 == c2 && eqGraphList gs1 gs2
-  eqGraph _ _ = False
-
-  eqGraphList : Eq a => (g1, g2 : List(Graph a)) -> Bool
-  eqGraphList [] [] = True
-  eqGraphList (g1 :: gs1) (g2 :: gs2) = eqGraph g1 g2 && eqGraphList gs1 gs2
-  eqGraphList _ _ = False
-
--- Eq (Graph a)
-
-Eq a => Eq (Graph a) where
-  (==) = eqGraph
-
-export
-test_graph : Graph Conf3
-test_graph =
-  Forth C0 [
-    Forth C1 [Back C0],
-    Forth C2 [Forth C1 [Back C0]]]
-
-export
 Show Conf3 where
   show C0 = "C0"
   show C1 = "C1"
   show C2 = "C2"
-
-export
-pp_test_graph : IO ()
-pp_test_graph = do
-  putStrLn (graph_pp test_graph)

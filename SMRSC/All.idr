@@ -13,12 +13,18 @@ import SMRSC.Graphs
 --import GraphsTheorems
 import SMRSC.BigStepSc
 --import BigStepScTheorems
-import SMRSC.BigStepScTests
 import SMRSC.Cographs
 --import CographsTheorems
 import SMRSC.Statistics
 --import StatisticsTheorems
 import SMRSC.Main
+
+-- Tests
+
+import SMRSC.Tests.UnitTest
+import SMRSC.Tests.Cartesian
+import SMRSC.Tests.Graphs
+import SMRSC.Tests.BigStepSc
 
 -- An instantiation of the model for counter systems
 

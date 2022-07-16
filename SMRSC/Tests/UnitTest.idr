@@ -3,6 +3,20 @@ module SMRSC.Tests.UnitTest
 %default total
 
 public export
+assertTrue: (msg: String) -> (actual : Bool) -> IO ()
+assertTrue msg True = pure ()
+assertTrue msg False = do
+  putStrLn $ "=== assertTrue failed ==="
+  putStrLn $ msg
+
+public export
+assertFalse: (msg: String) -> (actual : Bool) -> IO ()
+assertFalse msg False = pure ()
+assertFalse msg True = do
+  putStrLn $ "=== assertFalse failed ==="
+  putStrLn $ msg
+
+public export
 assertEq: (Show a, Eq a) => (msg: String) ->
   (actual : a) -> (expected: a) -> IO ()
 assertEq msg actual expected with (actual == expected)

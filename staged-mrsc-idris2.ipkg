@@ -20,7 +20,6 @@ modules
   , SMRSC.BigStepSc
   -- , SMRSC.BigStepScTheorems
   -- , SMRSC.TestScWorld
-  , SMRSC.BigStepScTests
   , SMRSC.Cographs
   -- , SMRSC.CographsTheorems
   , SMRSC.Statistics
@@ -29,3 +28,5 @@ modules
   -- , SMRSC.Main
   , SMRSC.Tests.UnitTest
   , SMRSC.Tests.Cartesian
+  , SMRSC.Tests.Graphs
+  , SMRSC.Tests.BigStepSc
