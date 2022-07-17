@@ -24,9 +24,14 @@ modules
   -- , SMRSC.CographsTheorems
   , SMRSC.Statistics
   -- , SMRSC.StatisticsTheorems
-  , SMRSC.Protocols.Synapse
   -- , SMRSC.Main
+
   , SMRSC.Tests.UnitTest
+  , SMRSC.Tests.All
   , SMRSC.Tests.Cartesian
   , SMRSC.Tests.Graphs
   , SMRSC.Tests.BigStepSc
+
+  , SMRSC.Counters
+  , SMRSC.Protocols.All
+  , SMRSC.Protocols.Synapse

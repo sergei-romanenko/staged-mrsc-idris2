@@ -187,8 +187,8 @@ test_pp =
   assertEq "graph_pp 1" (graph_pp pp_graph) pp_string
 
 export
-run : IO ()
-run = do
+runGraphs : IO ()
+runGraphs = do
   test_graph_show
   test_graph_eq
   test_lgraph_eq

@@ -3,4 +3,4 @@ module Cartesian
 import SMRSC.Tests.Cartesian
 
 main : IO ()
-main = run
+main = runCartesian

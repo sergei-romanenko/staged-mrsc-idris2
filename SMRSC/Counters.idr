@@ -12,6 +12,7 @@ import SMRSC.BarWhistles
 import SMRSC.Graphs
 import SMRSC.BigStepSc
 import SMRSC.Cographs
+import SMRSC.Statistics
 
 %default total
 
@@ -123,7 +124,7 @@ public export
 record CountersWorld where
   constructor MkCountersWorld
 
-  0 k : Nat
+  k : Nat
 
   -- Initial configuration
   start : Conf k
@@ -251,8 +252,6 @@ cl8_unsafe cw = cl8_bad_conf cw.unsafe
 -- A "DSL" for encoding counter systems in a user-friendly form.
 --
 
--- Not necessary?
-
 infix 6 >=^, =^
 
 public export
@@ -262,3 +261,69 @@ m >=^ j = isYes (m `decGTE_CN` j)
 public export
 (=^) : (m : NW) -> (j : Nat) -> Bool
 m =^ j = isYes (m `decEQ_CN` j)
+
+---
+--- Runners
+---
+
+export
+run_min_sc : (name : String) ->
+  (cw : CountersWorld) -> (m, d : Nat) -> String
+run_min_sc name cw m d =
+  let
+    r = name ++ " "
+    s = cntSc cw
+    w = cntWhistle (k cw) m d 
+    l = lazy_mrsc s w (start cw)
+    sl = cl_empty_and_bad (unsafe cw) l
+    (len_usl, size_usl) = size_unroll sl
+    r = r ++ "(" ++ show len_usl ++ ", " ++ show size_usl ++ ")\n"
+    (_, ml) = cl_min_size sl
+    gs = unroll ml
+    r = r ++
+      case gs of
+        [] => ": No solution"
+        (mg :: _) => graph_pp mg
+  in r
+
+{-
+function run_min_sc(cw::CountersWorld, m::Int, d::Int)
+    name = last(split(string(typeof(cw)), "."))
+    print("\n$name ")
+    w = CountersScWorld{typeof(cw),m,d}()
+    l8 = build_graph8(w, start(w))
+    sl8 = cl8_bad_conf(is_unsafe(cw), l8)
+    sl = prune(w, sl8)
+    len_usl, size_usl = size_unroll(sl)
+    println("($len_usl, $size_usl)")
+    ml = cl_min_size(sl)
+    gs = unroll(ml)
+    if isempty(gs)
+        println(": No solution")
+    else
+        mg = gs[1]
+        println(graph_pretty_printer(mg, nw_conf_pp))
+    end
+end
+-}
+
+export
+run_min_sc8 : (name : String) ->
+  (cw : CountersWorld) -> (m, d : Nat) -> String
+run_min_sc8 name cw m d =
+  let
+    r = name ++ " "
+    s = cntSc cw
+    w = cntWhistle (k cw) m d 
+    l8 = build_graph8 s (start cw)
+    sl8 = cl8_bad_conf (unsafe cw) l8
+    sl = prune0_graph8 s w sl8
+    (len_usl, size_usl) = size_unroll sl
+    r = r ++ "(" ++ show len_usl ++ ", " ++ show size_usl ++ ")\n"
+    (_, ml) = cl_min_size sl
+    gs = unroll ml
+    r = r ++
+      case gs of
+        [] => ": No solution"
+        (mg :: _) => graph_pp mg
+  in r

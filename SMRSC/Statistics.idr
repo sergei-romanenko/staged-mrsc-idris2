@@ -70,6 +70,6 @@ mutual
 
   public export
   size_unroll_ls : (ls : List (LazyGraph a)) -> (Nat, Nat)
-  size_unroll_ls [] = ?size_unroll_ls_rhs_0
+  size_unroll_ls [] = (1, 0)
   size_unroll_ls (l:: ls) with (size_unroll l, size_unroll_ls ls)
     _ | ((k', n'), (k, n)) = (k' * k , k' * n + k * n')

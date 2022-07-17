@@ -9,8 +9,8 @@ testCartesian msg g e =
   assertEq msg (cartesian g) e
 
 export
-run : IO ()
-run = do
+runCartesian : IO ()
+runCartesian = do
   testCartesian "cartesian0" [] [[]]
   testCartesian "cartesian1" [[], [10, 20]] []
   testCartesian "cartesian2" [[1, 2], []] []
