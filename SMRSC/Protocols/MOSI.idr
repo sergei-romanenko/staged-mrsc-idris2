@@ -37,8 +37,6 @@ MOSI =
         (o >=^ 1, [i + ^1, o - ^1, s, m])]
 
     unsafe : (c : Conf 4) -> Bool
-    -- unsafe [i, m, s] =
-    --     (m >=^ 1 && s >=^ 1) || (m >=^ 2)
     unsafe [i, o, s, m] =
         (o >=^ 2) || (m >=^ 2) || (s >=^ 1 && m >=^ 1)
 
@@ -109,6 +107,3 @@ export
 runMOSI8 : IO ()
 runMOSI8 = do
   assertEq "MOSI" (run_min_sc8 "MOSI" MOSI 3 10) expected
-  -- putStrLn (run_min_sc8 "MOSI" MOSI 3 10)
-
-

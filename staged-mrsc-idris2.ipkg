@@ -37,9 +37,9 @@ modules
   , SMRSC.Protocols.Synapse
   , SMRSC.Protocols.MSI
   , SMRSC.Protocols.MOSI
-  -- , SMRSC.Protocols.MESI
-  -- , SMRSC.Protocols.MOESI
-  -- , SMRSC.Protocols.Illinois
+  , SMRSC.Protocols.MESI
+  , SMRSC.Protocols.MOESI
+  , SMRSC.Protocols.Illinois
   -- , SMRSC.Protocols.Berkley
   -- , SMRSC.Protocols.Firefly
   -- , SMRSC.Protocols.Xerox

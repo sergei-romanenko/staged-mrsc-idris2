@@ -286,27 +286,6 @@ run_min_sc name cw m d =
         (mg :: _) => graph_pp mg
   in r
 
-{-
-function run_min_sc(cw::CountersWorld, m::Int, d::Int)
-    name = last(split(string(typeof(cw)), "."))
-    print("\n$name ")
-    w = CountersScWorld{typeof(cw),m,d}()
-    l8 = build_graph8(w, start(w))
-    sl8 = cl8_bad_conf(is_unsafe(cw), l8)
-    sl = prune(w, sl8)
-    len_usl, size_usl = size_unroll(sl)
-    println("($len_usl, $size_usl)")
-    ml = cl_min_size(sl)
-    gs = unroll(ml)
-    if isempty(gs)
-        println(": No solution")
-    else
-        mg = gs[1]
-        println(graph_pretty_printer(mg, nw_conf_pp))
-    end
-end
--}
-
 export
 run_min_sc8 : (name : String) ->
   (cw : CountersWorld) -> (m, d : Nat) -> String

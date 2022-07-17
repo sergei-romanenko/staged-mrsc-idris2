@@ -19,7 +19,7 @@ Synapse =
     k = 3
 
     start : Conf 3
-    start = [ω, ^ 0, ^ 0]
+    start = [ω, ^0, ^0]
 
     rules : (c : Conf 3) -> List ((Bool, Lazy (Conf 3)))
     rules [i, d, v] = [
@@ -121,5 +121,3 @@ export
 runSynapse8 : IO ()
 runSynapse8 = do
   assertEq "Synapse" (run_min_sc8 "Synapse" Synapse 3 10) expected
-
-

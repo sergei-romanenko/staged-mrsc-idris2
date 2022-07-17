@@ -19,7 +19,7 @@ MSI =
     k = 3
 
     start : Conf 3
-    start = [ω, ^ 0, ^ 0]
+    start = [ω, ^0, ^0]
 
     rules : (c : Conf 3) -> List ((Bool, Lazy (Conf 3)))
     rules [i, m, s] = [
@@ -64,5 +64,3 @@ export
 runMSI8 : IO ()
 runMSI8 = do
   assertEq "MSI" (run_min_sc8 "MSI" MSI 3 10) expected
-
-

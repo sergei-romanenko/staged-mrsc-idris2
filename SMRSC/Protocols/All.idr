@@ -3,6 +3,9 @@ module SMRSC.Protocols.All
 import SMRSC.Protocols.Synapse
 import SMRSC.Protocols.MSI
 import SMRSC.Protocols.MOSI
+import SMRSC.Protocols.MESI
+import SMRSC.Protocols.MOESI
+import SMRSC.Protocols.Illinois
 
 export
 runAll : IO ()
@@ -12,7 +15,7 @@ runAll = do
     runSynapse
     runMSI
     runMOSI
-    -- runMESI
+    runMESI
     -- runMOESI
     -- runIllinois
     -- runBerkley
@@ -26,9 +29,9 @@ runAll = do
     runSynapse8
     runMSI8
     runMOSI8
-    -- runMESI8
-    -- runMOESI8
-    -- runIllinois8
+    runMESI8
+    runMOESI8
+    runIllinois8
     -- runBerkley8
     -- runFirefly8
     -- runXerox8
