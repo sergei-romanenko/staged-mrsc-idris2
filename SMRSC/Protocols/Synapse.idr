@@ -13,8 +13,8 @@ import SMRSC.Statistics
 
 %default total
 
-synapse : CountersWorld
-synapse =
+Synapse : CountersWorld
+Synapse =
   let
     k = 3
 
@@ -115,11 +115,11 @@ Synapse (5, 97)
 export
 runSynapse : IO ()
 runSynapse = do
-  assertEq "Synapse" (run_min_sc "Synapse" synapse 3 10) expected
+  assertEq "Synapse" (run_min_sc "Synapse" Synapse 3 10) expected
 
 export
 runSynapse8 : IO ()
 runSynapse8 = do
-  assertEq "Synapse" (run_min_sc8 "Synapse" synapse 3 10) expected
+  assertEq "Synapse" (run_min_sc8 "Synapse" Synapse 3 10) expected
 
 
