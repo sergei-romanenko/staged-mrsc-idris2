@@ -8,6 +8,10 @@ import SMRSC.Protocols.MOESI
 import SMRSC.Protocols.Illinois
 import SMRSC.Protocols.Berkley
 import SMRSC.Protocols.Firefly
+import SMRSC.Protocols.Xerox
+import SMRSC.Protocols.ReaderWriter
+import SMRSC.Protocols.DataRace
+import SMRSC.Protocols.Futurebus
 
 export
 runAll : IO ()
@@ -36,8 +40,8 @@ runAll = do
     runIllinois8
     runBerkley8
     runFirefly8
-    -- runXerox8
-    -- runReaderWriter8
-    -- runDataRace8
+    runXerox8
+    runReaderWriter8
+    runDataRace8
     -- Slow!
     -- runFuturebus8

@@ -42,8 +42,8 @@ modules
   , SMRSC.Protocols.Illinois
   , SMRSC.Protocols.Berkley
   , SMRSC.Protocols.Firefly
-  -- , SMRSC.Protocols.Xerox
-  -- , SMRSC.Protocols.ReaderWriter
-  -- , SMRSC.Protocols.DataRace
+  , SMRSC.Protocols.Xerox
+  , SMRSC.Protocols.ReaderWriter
+  , SMRSC.Protocols.DataRace
   -- Slow!
-  -- , SMRSC.Protocols.Futurebus
+  , SMRSC.Protocols.Futurebus
