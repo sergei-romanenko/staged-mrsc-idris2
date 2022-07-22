@@ -380,7 +380,9 @@ cartesian∘map f xs = begin
   foldr (cartesian2 ∘ f) [ [] ] xs
   ∎
   where open ≡-Reasoning
+-}
 
+{-
 -- cartesian2[]
 
 cartesian2[] : ∀ {A : Set} (xs : List A) ->
@@ -388,8 +390,19 @@ cartesian2[] : ∀ {A : Set} (xs : List A) ->
 
 cartesian2[] [] = refl
 cartesian2[] (x :: xs) = cartesian2[] xs
+-}
+
+-- cartesian2_nil
+
+%hint
+public export
+cartesian2_nil : (xs : List a) ->
+  cartesian2 xs [] = []
+cartesian2_nil [] = Refl
+cartesian2_nil (x :: xs) = cartesian2_nil xs
 
 
+{-
 -- ⊥↔[]∈cartesian2
 
 ⊥↔[]∈cartesian2 : ∀ {A : Set} (xs : List A) (yss : List (List A)) ->

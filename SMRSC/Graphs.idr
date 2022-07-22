@@ -160,12 +160,13 @@ mutual
 
 mutual
 
-  export
+  public export
   bad_graph : (bad : a -> Bool) -> (g : Graph a) -> Bool
   bad_graph bad (Back c) = bad c
   bad_graph bad (Forth c gs) =
     bad c || bad_graph_gs bad gs
 
+  public export
   bad_graph_gs : (bad : a -> Bool) -> (gs : List (Graph a)) -> Bool
   bad_graph_gs bad [] = False
   bad_graph_gs bad (g :: gs) =
@@ -182,7 +183,7 @@ fl_bad_conf bad gs = filter (not . bad_graph bad) gs
 
 -- `cl_empty` removes subtrees that represent empty sets of graphs.
 
-export
+public export
 cl_empty_build : (c : a) -> List (List (LazyGraph a)) -> LazyGraph a
 cl_empty_build c [] = Empty
 cl_empty_build c (ls :: lss) = Build c (ls :: lss)
@@ -194,23 +195,35 @@ mutual
   cl_empty Empty = Empty
   cl_empty (Stop c) = Stop c
   cl_empty (Build c lss) = cl_empty_build c (cl_empty_lss lss)
-
+  
   public export
   cl_empty_lss : (lss : List (List (LazyGraph a))) ->  List (List (LazyGraph a))
   cl_empty_lss [] = []
   cl_empty_lss (ls :: lss) with (cl_empty_ls ls)
     _ | Nothing = cl_empty_lss lss
-    _ | (Just ls') = ls' :: cl_empty_lss lss
+    _ | Just ls' = ls' :: cl_empty_lss lss
+
 
   public export
   cl_empty_ls : (ls : List (LazyGraph a)) -> Maybe (List (LazyGraph a))
   cl_empty_ls [] = Just []
-  cl_empty_ls (l :: ls) with (cl_empty l)
-    _ | l' with (decEmpty l')
-      _ | Yes _ = Nothing
-      _ | No _ with (cl_empty_ls ls)
-        _ | Nothing = Nothing
-        _ | Just ls' = Just (l' :: ls')
+  cl_empty_ls (l :: ls) =
+    let l' = cl_empty l in
+    cl_empty_ls_case_l' l' ls (decEmpty l')
+
+  public export
+  cl_empty_ls_case_l' : (l' : LazyGraph a) ->
+    (ls : List (LazyGraph a)) -> Dec (Empty = l') ->
+    Maybe (List (LazyGraph a))
+  cl_empty_ls_case_l' l' ls (Yes _) = Nothing
+  cl_empty_ls_case_l' l' ls (No _) =
+    cl_empty_ls_case_ls l' ls (cl_empty_ls ls)
+
+  public export
+  cl_empty_ls_case_ls : (l' : LazyGraph a) -> (ls : List (LazyGraph a)) ->
+    Maybe (List (LazyGraph a)) -> Maybe (List (LazyGraph a))
+  cl_empty_ls_case_ls l' ls Nothing = Nothing
+  cl_empty_ls_case_ls l' ls (Just ls') = Just (l' :: ls')
 
 --
 -- Removing graphs that contain "bad" configurations.
@@ -336,7 +349,7 @@ mutual
   eq_gs (g1 :: gs1) (g2 :: gs2) = eq_g g1 g2 && eq_gs gs1 gs2
   eq_gs _ _ = False
 
-export
+public export
 Eq a => Eq (Graph a) where
   (==) = eq_g
 
@@ -344,7 +357,7 @@ Eq a => Eq (Graph a) where
 -- Eq (LazyGraph a)
 --
 
-export
+public export
 Eq a => Eq (LazyGraph a) where
   Empty == Empty = True
   Empty == Stop c = False
