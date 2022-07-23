@@ -18,7 +18,7 @@ modules
   , SMRSC.Graphs
   -- , SMRSC.GraphsTheorems
   , SMRSC.BigStepSc
-  -- , SMRSC.BigStepScTheorems
+  , SMRSC.BigStepScTheorems
   -- , SMRSC.TestScWorld
   , SMRSC.Cographs
   -- , SMRSC.CographsTheorems

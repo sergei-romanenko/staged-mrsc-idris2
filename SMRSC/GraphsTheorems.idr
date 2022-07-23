@@ -186,21 +186,16 @@ mutual
 -- `cl_bad_conf` is sound
 --
 
-{- 
-module ClBadConf-Sound (C : Set) (bad : C -> Bool) where
+-- cl_bad_conf*-is-map
 
-  -- cl_bad_conf*-is-map
+parameters (bad : a -> Bool)
 
-  cl_bad_conf*-is-map :
-    (ls : List (LazyGraph C)) ->
-      cl_bad_conf* bad ls ≡ map (cl_bad_conf bad) ls
+  cl_bad_conf_ls_is_map : (ls : List (LazyGraph a)) ->
+    cl_bad_conf_ls bad ls = map (cl_bad_conf bad) ls
+  cl_bad_conf_ls_is_map [] = Refl
+  cl_bad_conf_ls_is_map (l :: ls) =
+    cong (cl_bad_conf bad l ::) (cl_bad_conf_ls_is_map ls)
 
-  cl_bad_conf*-is-map [] =
-    refl
-  cl_bad_conf*-is-map (l :: ls) =
-    cong (_∷_ (cl_bad_conf bad l)) (cl_bad_conf*-is-map ls)
-
- -}
 
 {-
 mutual

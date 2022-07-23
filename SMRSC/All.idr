@@ -10,9 +10,9 @@ import SMRSC.Util
 import SMRSC.AlmostFullRel
 import SMRSC.BarWhistles
 import SMRSC.Graphs
---import GraphsTheorems
+import SMRSC.GraphsTheorems
 import SMRSC.BigStepSc
---import BigStepScTheorems
+import SMRSC.BigStepScTheorems
 import SMRSC.Cographs
 --import CographsTheorems
 import SMRSC.Statistics
