@@ -203,27 +203,15 @@ mutual
     _ | Nothing = cl_empty_lss lss
     _ | Just ls' = ls' :: cl_empty_lss lss
 
-
   public export
   cl_empty_ls : (ls : List (LazyGraph a)) -> Maybe (List (LazyGraph a))
   cl_empty_ls [] = Just []
-  cl_empty_ls (l :: ls) =
-    let l' = cl_empty l in
-    cl_empty_ls_case_l' l' ls (decEmpty l')
-
-  public export
-  cl_empty_ls_case_l' : (l' : LazyGraph a) ->
-    (ls : List (LazyGraph a)) -> Dec (Empty = l') ->
-    Maybe (List (LazyGraph a))
-  cl_empty_ls_case_l' l' ls (Yes _) = Nothing
-  cl_empty_ls_case_l' l' ls (No _) =
-    cl_empty_ls_case_ls l' ls (cl_empty_ls ls)
-
-  public export
-  cl_empty_ls_case_ls : (l' : LazyGraph a) -> (ls : List (LazyGraph a)) ->
-    Maybe (List (LazyGraph a)) -> Maybe (List (LazyGraph a))
-  cl_empty_ls_case_ls l' ls Nothing = Nothing
-  cl_empty_ls_case_ls l' ls (Just ls') = Just (l' :: ls')
+  cl_empty_ls (l :: ls) with (cl_empty l)
+    _ | l' with (decEmpty l')
+      _ | Yes _ = Nothing
+      _ | No _ with (cl_empty_ls ls)
+        _ | Nothing = Nothing
+        _ | Just ls' = Just (l' :: ls')
 
 --
 -- Removing graphs that contain "bad" configurations.
