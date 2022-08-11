@@ -14,9 +14,9 @@ import SMRSC.GraphsTheorems
 import SMRSC.BigStepSc
 import SMRSC.BigStepScTheorems
 import SMRSC.Cographs
---import CographsTheorems
+import SMRSC.CographsTheorems
 import SMRSC.Statistics
---import StatisticsTheorems
+import SMRSC.StatisticsTheorems
 import SMRSC.Main
 
 -- Tests
