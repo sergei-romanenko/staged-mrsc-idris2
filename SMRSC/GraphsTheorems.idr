@@ -67,6 +67,8 @@ import Data.DPair
 import SMRSC.Util
 import SMRSC.Graphs
 
+%default total
+
 %hint
 unroll_cl_empty : (c: a) ->(lss : List (List (LazyGraph a))) ->
   unroll (Build c lss) = unroll (cl_empty_build c lss)

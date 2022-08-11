@@ -38,6 +38,8 @@ import SMRSC.Graphs
 import SMRSC.BigStepSc
 import SMRSC.Cographs
 
+%default total
+
 {- 
 module BigStepMRSC∞-Correctness (scWorld : ScWorld) where
 

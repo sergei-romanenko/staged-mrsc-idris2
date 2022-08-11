@@ -33,6 +33,8 @@ import SMRSC.Graphs
 import SMRSC.BigStepSc
 import SMRSC.Statistics
 
+%default total
+
 --
 -- Counting results of `cartesian2` and `cartesian`.
 --

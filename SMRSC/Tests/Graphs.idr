@@ -4,6 +4,8 @@ import SMRSC.Tests.UnitTest
 import SMRSC.Util
 import SMRSC.Graphs
 
+%default total
+
 ibad : (c:Nat) -> Bool
 ibad c = c >= 100
 

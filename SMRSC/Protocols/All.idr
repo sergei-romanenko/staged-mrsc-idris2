@@ -13,6 +13,8 @@ import SMRSC.Protocols.ReaderWriter
 import SMRSC.Protocols.DataRace
 import SMRSC.Protocols.Futurebus
 
+%default total
+
 export
 runAll : IO ()
 runAll = do

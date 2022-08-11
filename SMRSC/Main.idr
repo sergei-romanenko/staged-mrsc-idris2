@@ -17,6 +17,8 @@ import Data.List
 import SMRSC.Counters
 import SMRSC.Protocols.Synapse
 
+%default total
+
 -- The process tree is returned by the supercompilers
 -- just to enable the user to take a look at it.
 

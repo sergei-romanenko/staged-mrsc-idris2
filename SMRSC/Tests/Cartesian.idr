@@ -3,6 +3,8 @@ module SMRSC.Tests.Cartesian
 import SMRSC.Tests.UnitTest
 import SMRSC.Util
 
+%default total
+
 testCartesian : (msg : String) ->
   (g : List (List Nat)) -> (e : List (List Nat)) -> IO ()
 testCartesian msg g e =

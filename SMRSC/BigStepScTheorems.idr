@@ -61,6 +61,12 @@ open import BigStepSc
 open ScWorld scWorld
 -}
 
+import SMRSC.Util
+import SMRSC.BarWhistles
+import SMRSC.Graphs
+import SMRSC.BigStepSc
+
+%default total
 
 --
 -- Extracting the residual graph from a proof
