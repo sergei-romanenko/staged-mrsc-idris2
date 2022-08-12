@@ -146,7 +146,7 @@ data NDSC : {auto s : ScWorld a} ->
     (f : IsFoldableToHistory s c h) ->
       NDSC h c (Back c)
   NDSC_Build : {auto s : ScWorld a} ->
-      {h : List a} -> {c : a} ->
+    {h : List a} -> {c : a} ->
     {cs : List a} -> {gs : List (Graph a)} ->
     (nf : Not (IsFoldableToHistory s c h)) ->
     (i : Elem cs (develop s c)) ->

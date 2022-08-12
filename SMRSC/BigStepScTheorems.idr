@@ -61,6 +61,8 @@ open import BigStepSc
 open ScWorld scWorld
 -}
 
+import Data.List.Elem
+
 import SMRSC.Util
 import SMRSC.BarWhistles
 import SMRSC.Graphs
@@ -73,54 +75,41 @@ import SMRSC.BigStepSc
 --
 -- (Just for fun, currently this is not used anywhere.)
 
-{-
-module GraphExtraction where
-  open BigStepNDSC scWorld
+namespace GraphExtraction
 
   -- extractGraph
 
-  extractGraph : ∀ {h : History} {c : Conf} {g : Graph Conf}
-    (p : h ⊢NDSC c ↪ g) -> Graph Conf
-
-  extractGraph (ndsc-fold {c = c} f) = back c
-  extractGraph (ndsc-build {c = c} {gs = gs} ¬f i ps) = forth c gs
+  extractGraph : {auto s : ScWorld a} ->
+    {h : List a} -> {c : a} -> {g : Graph a} ->
+    (p : NDSC h c g) -> Graph a
+  extractGraph p = g
 
   -- extractGraph-sound
 
-  extractGraph-sound : ∀ {h : History} {c : Conf} {g : Graph Conf}
-    (p : h ⊢NDSC c ↪ g) -> extractGraph p ≡ g
-
-  extractGraph-sound (ndsc-fold f) = refl
-  extractGraph-sound (ndsc-build ¬f i ps) = refl
--}
-
+  extractGraph_sound : {auto s : ScWorld a} ->
+    {h : List a} -> {c : a} -> {g : Graph a} ->
+    (p : NDSC h c g) -> extractGraph p = g
+  extractGraph_sound p = Refl
 
 --
 -- MRSC is sound with respect to NDSC
 --
 
-{-
-module MRSC→NDSC′ where
+namespace MRSC_imp_NDSC'
 
-  open BigStepNDSC scWorld
-  open BigStepMRSC scWorld
-
-  MRSC→NDSC : ∀ {h : History} {c g} ->
-    h ⊢MRSC c ↪ g -> h ⊢NDSC c ↪ g
-
-  MRSC→NDSC (mrsc-fold f) =
-    ndsc-fold f
-
-  MRSC→NDSC (mrsc-build {h} {c} {cs} {gs} ¬f ¬w i ∀i⊢ci↪gi) =
-    ndsc-build ¬f i (pw-map ∀i⊢ci↪gi)
+  MRSC_imp_NDSC : {auto s : ScWorld a} -> {auto w : BarWhistle a} ->
+    {h : List a} -> {c, g : _} ->
+    MRSC h c g -> NDSC h c g
+  MRSC_imp_NDSC (MRSC_Fold f) = NDSC_Fold f
+  MRSC_imp_NDSC (MRSC_Build nf nw i p) =
+    NDSC_Build nf i (pw_map p)
     where
-    pw-map : {cs : List Conf} {gs : List (Graph Conf)}
-             (qs : (c ∷ h) ⊢MRSC* cs ↪ gs) ->
-             (c ∷ h) ⊢NDSC* cs ↪ gs
-    pw-map [] = []
-    pw-map (q ∷ qs) = MRSC→NDSC q ∷ (pw-map qs)
--}
-
+    pw_map :
+      {cs : List a} -> {gs : List (Graph a)} ->
+      (qs : Pointwise (MRSC (c :: h)) cs gs) ->
+      Pointwise (NDSC (c :: h)) cs gs
+    pw_map [] = []
+    pw_map (q :: qs) = MRSC_imp_NDSC q :: pw_map qs
 
 --
 -- `naive-mrsc` is correct with respect to `_⊢MRSC_↪_`
@@ -130,12 +119,14 @@ module MRSC→NDSC′ where
 module MRSC-correctness where
 
   open BigStepMRSC scWorld
+-}
 
   -- naive-mrsc-sound′
 
+{- 
   naive-mrsc-sound′ :
     (h : History) (b : Bar ↯ h) {c : Conf} {g : Graph Conf} ->
-    g ∈ naive-mrsc′ h b c -> h ⊢MRSC c ↪ g
+    g ∈ naive-mrsc′ h b c -> MRSC h c g
 
   naive-mrsc-sound′ h b {c} q with foldable? h c
   naive-mrsc-sound′ h b (here g≡) | yes f rewrite g≡ =
@@ -151,22 +142,22 @@ module MRSC-correctness where
     open ∼-Reasoning
 
     step : ∀ c′ -> List (Graph Conf)
-    step = naive-mrsc′ (c ∷ h) (bs c)
+    step = naive-mrsc′ (c :: h) (bs c)
 
     gss : List (List (Graph Conf))
     gss = concat (map (cartesian ∘ map step) (c ⇉))
 
     helper₄ : ∀ cs gs ->
       gs ∈ cartesian (map step cs) ->
-         (c ∷ h) ⊢MRSC* cs ↪ gs
+         (c :: h) MRSC_cs cs ↪ gs
     helper₄ cs gs =
       gs ∈ cartesian (map step cs)
         ↔⟨ sym $ ∈*↔∈cartesian ⟩
       Pointwise.Rel _∈_ gs (map step cs)
         ∼⟨ ∈*∘map→ step cs ⟩
       Pointwise.Rel (λ c′ gs′ -> gs′ ∈ step c′) cs gs
-        ∼⟨ Pointwise.map (naive-mrsc-sound′ (c ∷ h) (bs c)) ⟩
-      (c ∷ h) ⊢MRSC* cs ↪ gs
+        ∼⟨ Pointwise.map (naive-mrsc-sound′ (c :: h) (bs c)) ⟩
+      (c :: h) MRSC_cs cs ↪ gs
       ∎
 
     helper₃ : ∀ gss′ css -> gss′ ∈ map (cartesian ∘ map step) css -> _
@@ -183,7 +174,7 @@ module MRSC-correctness where
       ∃ (λ gss′ -> gs′ ∈ gss′ × gss′ ∈ map (cartesian ∘ map step) (c ⇉))
       ∎
 
-    helper₁ : ∃ (λ gs′ -> gs′ ∈ gss × g ≡ forth c gs′) -> h ⊢MRSC c ↪ g
+    helper₁ : ∃ (λ gs′ -> gs′ ∈ gss × g ≡ forth c gs′) -> MRSC h c g
     helper₁ (gs′ , gs′∈gss , g≡) =
       let
         gss′ , gs′∈gss′ , gss′∈ = helper₂ gs′ gs′∈gss
@@ -193,20 +184,20 @@ module MRSC-correctness where
           ∼⟨ subst (_∈_ gs′) gss′≡ ⟩
         gs′ ∈ cartesian (map step cs)
           ∼⟨ helper₄ cs gs′ ⟩
-        c ∷ h ⊢MRSC* cs ↪ gs′
+        c :: h MRSC_cs cs ↪ gs′
           ∼⟨ mrsc-build ¬f ¬w cs∈css ⟩
         h ⊢MRSC c ↪ forth c gs′
           ∼⟨ subst (_⊢MRSC_↪_ h c) (P.sym g≡) ⟩
-        h ⊢MRSC c ↪ g
+        MRSC h c g
         ∎ $ gs′∈gss′
 
-    helper : g ∈ map (forth c) gss  -> h ⊢MRSC c ↪ g
+    helper : g ∈ map (forth c) gss  -> MRSC h c g
     helper =
       g ∈ map (forth c) gss
         ↔⟨ sym $ map-∈↔ ⟩
       ∃ (λ gs′ -> gs′ ∈ gss × g ≡ forth c gs′)
         ∼⟨ helper₁ ⟩
-      h ⊢MRSC c ↪ g
+      MRSC h c g
       ∎
 -}
 
@@ -226,7 +217,7 @@ module MRSC-correctness where
 
   naive-mrsc-complete′ :
     (h : History) (b : Bar ↯ h) {c : Conf} {g : Graph Conf} ->
-      h ⊢MRSC c ↪ g -> g ∈ naive-mrsc′ h b c
+      MRSC h c g -> g ∈ naive-mrsc′ h b c
 
   naive-mrsc-complete′ h b {c} q with foldable? h c
   naive-mrsc-complete′ h b (mrsc-fold f) | yes f′ =
@@ -249,16 +240,16 @@ module MRSC-correctness where
     where
     open ∼-Reasoning
 
-    step = naive-mrsc′ (c ∷ h) (bs c)
+    step = naive-mrsc′ (c :: h) (bs c)
     gsss = map (cartesian ∘ map step) (c ⇉)
     gss = concat gsss
 
     pw→cart : ∀ cs gs ->
-      (c ∷ h) ⊢MRSC* cs ↪ gs ->
+      (c :: h) MRSC_cs cs ↪ gs ->
         gs ∈ cartesian (map step cs)
     pw→cart cs gs =
-      (c ∷ h) ⊢MRSC* cs ↪ gs
-        ∼⟨ Pointwise.map (naive-mrsc-complete′ (c ∷ h) (bs c)) ⟩
+      (c :: h) MRSC_cs cs ↪ gs
+        ∼⟨ Pointwise.map (naive-mrsc-complete′ (c :: h) (bs c)) ⟩
       Pointwise.Rel (λ c′ gs′ -> gs′ ∈ step c′) cs gs
         ∼⟨ ∈*∘map← step cs ⟩
       Pointwise.Rel _∈_ gs (map step cs)
@@ -354,24 +345,24 @@ module MRSC-naive≡lazy where
       where
       open ≡-Reasoning
 
-      naive-step = naive-mrsc′ (c ∷ h) (bs c)
-      lazy-step = lazy-mrsc′ (c ∷ h) (bs c)
+      naive-step = naive-mrsc′ (c :: h) (bs c)
+      lazy-step = lazy-mrsc′ (c :: h) (bs c)
 
       helper : ∀ css ->
         concat (map (cartesian ∘ map naive-step) css) ≡
           ⟪ map (map lazy-step) css ⟫⇉
 
       helper [] = refl
-      helper (cs ∷ css) = begin
-        concat (map (cartesian ∘ map naive-step) (cs ∷ css))
+      helper (cs :: css) = begin
+        concat (map (cartesian ∘ map naive-step) (cs :: css))
           ≡⟨⟩
         cartesian (map naive-step cs) ++
           concat (map (cartesian ∘ map naive-step) css)
-          ≡⟨ cong₂ _++_ (cong cartesian (map∘naive-mrsc′ (c ∷ h) (bs c) cs))
+          ≡⟨ cong₂ _++_ (cong cartesian (map∘naive-mrsc′ (c :: h) (bs c) cs))
                         (helper css) ⟩
         cartesian ⟪ map lazy-step cs ⟫* ++ ⟪ map (map lazy-step) css ⟫⇉
           ≡⟨⟩
-        ⟪ map (map lazy-step) (cs ∷ css) ⟫⇉
+        ⟪ map (map lazy-step) (cs :: css) ⟫⇉
         ∎
 
     -- map∘naive-mrsc′
