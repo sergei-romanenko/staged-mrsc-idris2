@@ -1,5 +1,8 @@
 package staged-mrsc-idris2
 
+authors = "Sergei Romanenko"
+version = 0.0.1
+
 depends = contrib
 
 --opts = "-p contrib"

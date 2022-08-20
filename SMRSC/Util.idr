@@ -14,7 +14,7 @@ open import Data.List
 open import Data.List.Properties
   using (::-injective; foldr-universal; foldr-fusion)
 open import Data.List.Any
-  using (Any; here; there; module Membership-≡)
+  using (Any; here; there; module Membership-=)
 open import Data.List.Any.Properties
   using (Any-cong; ⊥↔Any[]; Any↔; ++↔; ::↔; return↔; map↔; concat↔; ⊎↔)
 open import Data.List.Any.Membership as MB
@@ -71,26 +71,55 @@ open import Function.Related.TypeIsomorphisms
 
 module ×⊎ {k ℓ} = CommutativeSemiring (×⊎-CommutativeSemiring k ℓ)
 
-open Membership-≡
+open Membership-=
 -}
 
 import Data.List
 import Data.Vect
 import Control.Function
+import Data.List.Elem
 import Data.List.Quantifiers
 
 %default total
 
+--
+-- Implication reasoning
+--
+
+prefix 1  |~~
+infixl 0  ~~>
+infix  1  ...
+infixr 0 |>
+
+-- Implication is a preorder relation...
+
+public export
+(|~~) : (0 a : Type) -> (a -> a)
+(|~~) a = id
+
+public export
+(~~>) : (p : a -> b) -> (q : b -> c) -> (a -> c)
+(~~>) p q = q . p
+
+public export
+(...) : (0 b : Type) -> (a -> b) -> (a -> b)
+(...) b xy = xy
+
+public export
+(|>) : forall a, b. (x : a) -> (f : a -> b) -> b
+(|>) x f = f x
+
+
 {-
 -- m+1+n≡1+m+n
 
-m+1+n≡1+m+n : ∀ m n -> m + suc n ≡ suc (m + n)
+m+1+n≡1+m+n : ∀ m n -> m + suc n = suc (m + n)
 m+1+n≡1+m+n zero n = refl
 m+1+n≡1+m+n (suc m) n = cong suc (m+1+n≡1+m+n m n)
 
 -- m∸n+n≡m
 
-m∸n+n≡m : (m n : ℕ) -> n ≤ m -> m ∸ n + n ≡ m
+m∸n+n≡m : (m n : ℕ) -> n ≤ m -> m ∸ n + n = m
 m∸n+n≡m m .0 z≤n = begin
   m ∸ 0 + 0
     ≡⟨⟩
@@ -98,7 +127,7 @@ m∸n+n≡m m .0 z≤n = begin
     ≡⟨ proj₂ *+.+-identity m ⟩
   m
   ∎
-  where open ≡-Reasoning
+  where open =-Reasoning
 m∸n+n≡m .(suc n) .(suc m) (s≤s {m} {n} n≤m) = begin
   suc n ∸ suc m + suc m
     ≡⟨⟩
@@ -108,7 +137,7 @@ m∸n+n≡m .(suc n) .(suc m) (s≤s {m} {n} n≤m) = begin
     ≡⟨ cong suc (m∸n+n≡m n m n≤m) ⟩
   suc n
   ∎
-  where open ≡-Reasoning
+  where open =-Reasoning
 
 
 -- foldr∘map
@@ -123,7 +152,7 @@ foldr∘map f g n =
 
 gfilter-++-commute :
   ∀ {a b} {A : Set a} {B : Set b} (f : A -> Maybe B) xs ys ->
-    gfilter f (xs ++ ys) ≡ gfilter f xs ++ gfilter f ys
+    gfilter f (xs ++ ys) = gfilter f xs ++ gfilter f ys
 
 gfilter-++-commute f [] ys = refl
 gfilter-++-commute f (x :: xs) ys with f x
@@ -134,7 +163,7 @@ gfilter-++-commute f (x :: xs) ys with f x
 
 filter-++-commute :
   ∀ {a} {A : Set a} (p : A -> Bool) xs ys ->
-    filter p (xs ++ ys) ≡ filter p xs ++ filter p ys
+    filter p (xs ++ ys) = filter p xs ++ filter p ys
 
 filter-++-commute f xs ys =
   gfilter-++-commute (λ z -> Data.Bool.if f z then just z else nothing) xs ys
@@ -143,7 +172,7 @@ filter-++-commute f xs ys =
 
 filter∘map :
   ∀ {a b} {A : Set a} {B : Set b} (p : B -> Bool) (f : A -> B) xs ->
-  filter p (map f xs) ≡ map f (filter (p ∘ f) xs)
+  filter p (map f xs) = map f (filter (p ∘ f) xs)
 
 filter∘map p f [] = refl
 filter∘map p f (x :: xs) with p (f x)
@@ -154,7 +183,7 @@ filter∘map p f (x :: xs) with p (f x)
 
 filter-false :
   ∀ {a} {A : Set a} (xs : List A) ->
-    filter (const false) xs ≡ []
+    filter (const false) xs = []
 
 filter-false [] = refl
 filter-false (x :: xs) = filter-false xs
@@ -180,7 +209,7 @@ filter-cong {p = p} {q = q} p≗q (x :: xs)
 public export
 data Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type where
   Nil  : Pointwise r [] []
-  (::) : {r : _} -> 
+  (::) : {r : _} ->
     r x y -> Pointwise r xs ys -> Pointwise r (x :: xs) (y :: ys)
 
 public export
@@ -204,19 +233,19 @@ decPointwise dec (x :: xs) (y :: ys) with (dec x y)
     _ | No npw = No $ \(_ :: pw) => npw pw
   _ | No nr_x_y = No $ \(r_x_y :: _) => nr_x_y r_x_y
 
-{- 
+{-
 public export
 Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type
 Pointwise r xs ys = All (uncurry r) (zip xs ys)
 -}
 
-{- 
+{-
 pw_corr12 : Pointwise r xs ys -> Pointwise' r xs ys
 pw_corr12 [] = []
 pw_corr12 (rxy :: pw) = rxy :: pw_corr12 pw
 -}
 
-{- 
+{-
 decPointwise : {r : a -> b -> Type} -> (dec : (x : a) -> (y : b) -> Dec(r x y)) ->
   (xs : List a) -> (ys :List b) -> Dec (Pointwise r xs ys)
 decPointwise dec xs ys =
@@ -224,13 +253,13 @@ decPointwise dec xs ys =
 -}
 
 
-{-
 --
 -- Some "technical" theorems about `Any`
 --
 
 -- ⊥⊎
 
+{-
 ⊥⊎ : ∀ {A : Set} -> A ↔ (⊥ ⊎ A)
 
 ⊥⊎ {A} = record
@@ -244,7 +273,7 @@ decPointwise dec xs ys =
   where
   to : (⊥ ⊎ A) -> A
   to = [ ⊥-elim , id ]′
-  from∘to : (x : ⊥ ⊎ A) -> inj₂ (to x) ≡ x
+  from∘to : (x : ⊥ ⊎ A) -> inj₂ (to x) = x
   from∘to (inj₁ ())
   from∘to (inj₂ x) = refl
 
@@ -285,7 +314,7 @@ decPointwise dec xs ys =
   from x (ys :: yss) (there []∈map::) = from x yss []∈map::
 
   to∘from : ∀ (x′ : A) (yss′ : List (List A)) ->
-    (p : [] ∈ map (_::_ x′) yss′) -> to x′ yss′ (from x′ yss′ p) ≡ p
+    (p : [] ∈ map (_::_ x′) yss′) -> to x′ yss′ (from x′ yss′ p) = p
   to∘from x [] ()
   to∘from x (ys :: yss) (here ())
   to∘from x (ys :: yss) (there p) = cong there (to∘from x yss p)
@@ -295,14 +324,14 @@ decPointwise dec xs ys =
 
 concat↔∘Any↔ : {A B : Set}
   (z : B) (g : B -> B) (f : A -> List B) (xs : List A) ->
-  ∃ (λ x -> x ∈ xs × ∃ (λ y -> y ∈ f x × z ≡ g y)) ↔
+  ∃ (λ x -> x ∈ xs × ∃ (λ y -> y ∈ f x × z = g y)) ↔
   z ∈ map g (concat (map f xs))
 concat↔∘Any↔ z g f xs =
-  ∃ (λ x -> x ∈ xs × ∃ (λ y -> y ∈ f x × z ≡ g y))
+  ∃ (λ x -> x ∈ xs × ∃ (λ y -> y ∈ f x × z = g y))
     ∼⟨ Σ.cong Inv.id (Inv.id ×-cong Any↔) ⟩
-  ∃ (λ x -> x ∈ xs × (Any (λ y -> z ≡ g y) (f x)))
+  ∃ (λ x -> x ∈ xs × (Any (λ y -> z = g y) (f x)))
     ∼⟨ _ ∎ ⟩
-  ∃ (λ x -> x ∈ xs × (Any (λ y -> z ≡ g y) ∘ f) x)
+  ∃ (λ x -> x ∈ xs × (Any (λ y -> z = g y) ∘ f) x)
     ∼⟨ _ ∎ ⟩
   ∃ (λ x -> x ∈ xs × (Any (_≡_ z ∘ g) ∘ f) x)
     ∼⟨ Any↔ ⟩
@@ -339,6 +368,30 @@ concat↔∘Any↔ z g f xs =
 ∈*∘map← f (x :: xs) (y∈fx :: xs∈*) = y∈fx :: ∈*∘map← f xs xs∈*
 -}
 
+{-
+∈-map⁻ : ∀ {y xs} -> y ∈ map f xs -> ∃ λ x -> x ∈ xs × y = f x
+
+map-∈↔ : ∀ {y xs} -> (∃ λ x -> x ∈ xs × y = f x) ↔ y ∈ map f xs
+-}
+
+export
+map_elem : (y : a) -> (xs : List a) -> Elem y (map f xs) -> (x ** (Elem x xs, y = f x))
+map_elem _ [] Here impossible
+map_elem _ [] (There x) impossible
+map_elem _ (x' :: xs) Here = (x' ** (Here, Refl))
+map_elem y (x' :: xs) (There elem_y) with (map_elem y xs elem_y)
+  _ | ((x ** (elem_x, y__fx))) = (x ** (There elem_x, y__fx))
+
+  -- map_elem y xs elem_y
+
+{-
+elem_map : (y : a) -> (xs : List a) ->
+  (x ** (Elem x xs, y = f x)) -> Elem y (map f xs)
+elem_map y [] ((x ** (elem_x_nil, y__fx))) = absurd elem_x_nil
+elem_map y (x' :: xs) (x ** (elem_x, y__fx)) = ?op_rhs
+-}
+
+
 --
 -- Cartesian product
 --
@@ -363,7 +416,7 @@ cartesian (xs :: xss) = cartesian2 xs (cartesian xss)
 -- cartesian-is-foldr
 
 cartesian-is-foldr : ∀  {A : Set} (xss : List (List A)) ->
-  cartesian xss ≡ foldr cartesian2 [ [] ] xss
+  cartesian xss = foldr cartesian2 [ [] ] xss
 
 cartesian-is-foldr [] = refl
 cartesian-is-foldr (xs :: xss) = cong (cartesian2 xs) (cartesian-is-foldr xss)
@@ -371,7 +424,7 @@ cartesian-is-foldr (xs :: xss) = cong (cartesian2 xs) (cartesian-is-foldr xss)
 -- cartesian∘map
 
 cartesian∘map : ∀ {A B : Set} (f : A -> List B) (xs : List A) ->
-  cartesian (map f xs) ≡ foldr (cartesian2 ∘ f) [ [] ]  xs
+  cartesian (map f xs) = foldr (cartesian2 ∘ f) [ [] ]  xs
 cartesian∘map f xs = begin
   cartesian (map f xs)
     ≡⟨ cartesian-is-foldr (map f xs) ⟩
@@ -379,14 +432,14 @@ cartesian∘map f xs = begin
     ≡⟨ foldr∘map f cartesian2 [ [] ] xs ⟩
   foldr (cartesian2 ∘ f) [ [] ] xs
   ∎
-  where open ≡-Reasoning
+  where open =-Reasoning
 -}
 
 {-
 -- cartesian2[]
 
 cartesian2[] : ∀ {A : Set} (xs : List A) ->
-  cartesian2 xs [] ≡ []
+  cartesian2 xs [] = []
 
 cartesian2[] [] = refl
 cartesian2[] (x :: xs) = cartesian2[] xs
@@ -427,7 +480,7 @@ cartesian2_nil (x :: xs) = cartesian2_nil xs
 -- ≡×∈->map::
 
 ≡×∈->map:: : ∀ {A : Set} {x : A} {xs : List A} {y : A} {yss : List (List A)} ->
-  (x ≡ y × xs ∈ yss) -> x :: xs ∈ map {B = List A} (_::_ y) yss
+  (x = y × xs ∈ yss) -> x :: xs ∈ map {B = List A} (_::_ y) yss
 
 ≡×∈->map:: (refl , here refl) = here refl
 ≡×∈->map:: (refl , there xs∈yss) = there (≡×∈->map:: (refl , xs∈yss))
@@ -435,7 +488,7 @@ cartesian2_nil (x :: xs) = cartesian2_nil xs
 -- map::->≡×∈
 
 map::->≡×∈ : ∀ {A : Set} {x : A} {xs : List A} {y : A} {yss : List (List A)} ->
-  x :: xs ∈ map {B = List A} (_::_ y) yss -> (x ≡ y × xs ∈ yss)
+  x :: xs ∈ map {B = List A} (_::_ y) yss -> (x = y × xs ∈ yss)
 
 map::->≡×∈ {yss = []} ()
 map::->≡×∈ {yss = ys :: yss} (here x::xs≡y::ys) =
@@ -450,7 +503,7 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
 -- ≡×∈↔map::
 
 ≡×∈↔map:: : ∀ {A : Set} (x : A) (xs : List A) (y : A) (yss : List (List A)) ->
-  (x ≡ y × xs ∈ yss) ↔ x :: xs ∈ map {B = List A} (_::_ y) yss
+  (x = y × xs ∈ yss) ↔ x :: xs ∈ map {B = List A} (_::_ y) yss
 
 ≡×∈↔map:: {A} x xs y yss = record
   { to = ->-to-⟶ ≡×∈->map::
@@ -464,14 +517,14 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
   open ∼-Reasoning
 
   to∘from : ∀ {A : Set} {x : A} {xs : List A} {y : A} {yss : List (List A)} ->
-    (p : x ≡ y × xs ∈ yss) -> map::->≡×∈ (≡×∈->map:: p) ≡ p
+    (p : x = y × xs ∈ yss) -> map::->≡×∈ (≡×∈->map:: p) = p
   to∘from (refl , here refl) = refl
   to∘from {y = y} {yss = ys :: yss} (refl , there xs∈yss)
     rewrite to∘from {y = y} (refl {x = y} , xs∈yss)
     = refl
 
   from∘to : ∀ {A : Set} {x : A} {xs : List A} {y : A} {yss : List (List A)} ->
-    (p : x :: xs ∈ map (_::_ y) yss) -> ≡×∈->map:: (map::->≡×∈ p) ≡ p
+    (p : x :: xs ∈ map (_::_ y) yss) -> ≡×∈->map:: (map::->≡×∈ p) = p
   from∘to {yss = []} ()
   from∘to {yss = ys :: yss} (here refl) = refl
   from∘to {yss = ys :: yss} (there x::xs∈) with map::->≡×∈ x::xs∈ | from∘to x::xs∈
@@ -497,9 +550,9 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
 ∈∈↔::cartesian2 x xs (y :: ys) yss =
   (x ∈ y :: ys × xs ∈ yss)
     ↔⟨ sym (::↔ (_≡_ x)) ×-cong (_ ∎) ⟩
-  ((x ≡ y ⊎ x ∈ ys) × xs ∈ yss)
-    ↔⟨ proj₂ ×⊎.distrib (xs ∈ yss) (x ≡ y) (x ∈ ys) ⟩
-  (x ≡ y × xs ∈ yss ⊎ x ∈ ys × xs ∈ yss)
+  ((x = y ⊎ x ∈ ys) × xs ∈ yss)
+    ↔⟨ proj₂ ×⊎.distrib (xs ∈ yss) (x = y) (x ∈ ys) ⟩
+  (x = y × xs ∈ yss ⊎ x ∈ ys × xs ∈ yss)
     ↔⟨ ≡×∈↔map:: x xs y yss ⊎-cong ∈∈↔::cartesian2 x xs ys yss ⟩
   (x :: xs ∈ map (_::_ y) yss ⊎ x :: xs ∈ cartesian2 ys yss)
     ↔⟨ ++↔ ⟩
@@ -526,7 +579,7 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
     Pointwise.Rel _∈_ [] (ys :: yss) -> ⊥
   from y yss ()
   from∘to : ∀ (ys : List A) (yss : List (List A)) ->
-    (p : Pointwise.Rel _∈_ [] (ys :: yss)) -> ⊥-elim (from ys yss p) ≡ p
+    (p : Pointwise.Rel _∈_ [] (ys :: yss)) -> ⊥-elim (from ys yss p) = p
   from∘to ys yss ()
 
 
@@ -549,9 +602,9 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
   from : Pointwise.Rel _∈_ (x :: xs) (ys :: yss) ->
            x ∈ ys × Pointwise.Rel _∈_ xs yss
   from (x∈ys :: xs∈*yss) = x∈ys , xs∈*yss
-  to∘from : (p : x ∈ ys × Pointwise.Rel _∈_ xs yss) -> from (to p) ≡ p
+  to∘from : (p : x ∈ ys × Pointwise.Rel _∈_ xs yss) -> from (to p) = p
   to∘from (x∈ys , xs∈*yss) = refl
-  from∘to : (p : Pointwise.Rel _∈_ (x :: xs) (ys :: yss)) -> to (from p) ≡ p
+  from∘to : (p : Pointwise.Rel _∈_ (x :: xs) (ys :: yss)) -> to (from p) = p
   from∘to (x∈ys :: xs∈*yss) = refl
 
 --
@@ -577,9 +630,9 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
   from p = here refl
   to : _ -> _
   to p = []
-  to∘from : (p : Pointwise.Rel _∈_ [] []) -> [] ≡ p
+  to∘from : (p : Pointwise.Rel _∈_ [] []) -> [] = p
   to∘from [] = refl
-  from∘to : (p : [] ∈ [] :: []) -> here refl ≡ p
+  from∘to : (p : [] ∈ [] :: []) -> here refl = p
   from∘to (here refl) = refl
   from∘to (there ())
 
@@ -608,9 +661,9 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
   to : (p : x :: xs ∈ [] :: []) -> Pointwise.Rel _∈_ (x :: xs) []
   to (here ())
   to (there ())
-  to∘from : (p : Pointwise.Rel _∈_ (x :: xs) []) -> to (from p) ≡ p
+  to∘from : (p : Pointwise.Rel _∈_ (x :: xs) []) -> to (from p) = p
   to∘from ()
-  from∘to : (p : x :: xs ∈ [] :: []) -> from (to p) ≡ p
+  from∘to : (p : x :: xs ∈ [] :: []) -> from (to p) = p
   from∘to (here ())
   from∘to (there ())
 
@@ -674,8 +727,8 @@ cartesian-mono xss₁ xss₂ xss₁⊆xss₂ {zs} =
 
 -- all∘::
 
-all∘:: : {A : Set} (p : A -> Bool) {x : A} {b : Bool} -> p x ≡ b ->
-  all p ∘ (_::_ x) ≡ _∧_ b ∘ all p
+all∘:: : {A : Set} (p : A -> Bool) {x : A} {b : Bool} -> p x = b ->
+  all p ∘ (_::_ x) = _∧_ b ∘ all p
 
 all∘:: p {x} {b} px≡b = begin
   all p ∘ (_::_ x)
@@ -684,13 +737,13 @@ all∘:: p {x} {b} px≡b = begin
     ≡⟨ cong (λ px -> _∧_ px ∘ all p) px≡b ⟩
   _∧_ b ∘ all p
   ∎
-  where open ≡-Reasoning
+  where open =-Reasoning
 
 -- filter∘cartesian2
 
 filter∘cartesian2 :
   ∀ {A : Set} (p : A -> Bool) (xs : List A) (xss : List (List A)) ->
-    filter (all p) (cartesian2 xs xss) ≡
+    filter (all p) (cartesian2 xs xss) =
       cartesian2 (filter p xs) (filter (all p) xss)
 
 filter∘cartesian2 p [] xss = refl
@@ -708,9 +761,9 @@ filter∘cartesian2 p (x :: xs) xss with p x | inspect p x
   cartesian2 (filter p xs) (filter (all p) xss)
   ∎
   where
-  open ≡-Reasoning
+  open =-Reasoning
 
-  helper : filter (all p) (map (_::_ x) xss) ≡ map (_::_ x) (filter (all p) xss)
+  helper : filter (all p) (map (_::_ x) xss) = map (_::_ x) (filter (all p) xss)
   helper = begin
     filter (all p) (map (_::_ x) xss)
       ≡⟨ filter∘map (all p) (_::_ x) xss ⟩
@@ -731,9 +784,9 @@ filter∘cartesian2 p (x :: xs) xss with p x | inspect p x
   cartesian2 (filter p xs) (filter (all p) xss)
   ∎
   where
-  open ≡-Reasoning
+  open =-Reasoning
 
-  helper : filter (all p) (map (_::_ x) xss) ≡ []
+  helper : filter (all p) (map (_::_ x) xss) = []
   helper = begin
     filter (all p) (map (_::_ x) xss)
       ≡⟨ filter∘map (all p) (_::_ x) xss ⟩
@@ -750,7 +803,7 @@ filter∘cartesian2 p (x :: xs) xss with p x | inspect p x
 
 filter∘cartesian :
   ∀ {A : Set} (p : A -> Bool) (xss : List (List A)) ->
-    filter (all p) (cartesian xss) ≡ cartesian (map (filter p) xss)
+    filter (all p) (cartesian xss) = cartesian (map (filter p) xss)
 
 filter∘cartesian p [] = refl
 filter∘cartesian p (xs :: xss) = begin
@@ -766,7 +819,7 @@ filter∘cartesian p (xs :: xss) = begin
     ≡⟨⟩
   cartesian (map (filter p) (xs :: xss))
   ∎
-  where open ≡-Reasoning
+  where open =-Reasoning
 
 --
 -- Cartesian product for vectors
@@ -802,7 +855,7 @@ cartesianMap f (x :: xs) with f x
 -- cartesianMap-correct
 
 cartesianMap-correct : {A B : Set} (f : A -> List B) (xs : List A) ->
-  cartesianMap f xs ≡ cartesian (map f xs)
+  cartesianMap f xs = cartesian (map f xs)
 
 cartesianMap-correct f [] = refl
 cartesianMap-correct f (x :: xs) with f x
@@ -812,5 +865,5 @@ cartesianMap-correct f (x :: xs) with f x
     ≡⟨ cong (cartesian2 (y :: ys)) (cartesianMap-correct f xs) ⟩
   cartesian2 (y :: ys) (cartesian (map f xs))
   ∎
-  where open ≡-Reasoning
+  where open =-Reasoning
 -}
