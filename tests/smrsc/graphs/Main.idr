@@ -1,4 +1,4 @@
-module Graphs
+module Main
 
 import SMRSC.Tests.Graphs
 

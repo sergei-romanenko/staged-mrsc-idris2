@@ -1,4 +1,4 @@
-module Cartesian
+module Main
 
 import SMRSC.Tests.Cartesian
 

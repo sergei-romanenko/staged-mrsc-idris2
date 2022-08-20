@@ -1,6 +1,9 @@
 package runtests
 
-main = Main
-executable = runtests
+authors = "Sergei Romanenko"
+version = 0.0.1
 
 depends = contrib, test, staged-mrsc-idris2
+
+main = Main
+executable = runtests

@@ -1,3 +1,0 @@
-module All
-
-import Cartesian

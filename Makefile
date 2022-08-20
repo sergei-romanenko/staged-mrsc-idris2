@@ -28,6 +28,9 @@ run-executable: build-executable
 install:
 	idris2 --install staged-mrsc-idris2.ipkg
 
+install-with-src:
+	idris2 --install-with-src staged-mrsc-idris2.ipkg
+	
 testbin:
 	@${MAKE} -C tests testbin
 
@@ -39,8 +42,8 @@ test-only:
 retest-only:
 	${MAKE} -C tests retest
 
-test: build install testbin test-only
-retest: build install testbin retest-only
+test: build testbin test-only
+retest: build testbin retest-only
 
 # time-time:
 # 	time ${MAKE} test INTERACTIVE=''

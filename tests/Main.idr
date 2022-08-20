@@ -6,9 +6,9 @@ import Test.Golden
 
 allTests : TestPool
 allTests = MkTestPool "Staged MRSC" [] Default
-  [ "Util"
-  , "Graphs"
-  , "Protocols"
+  [ "cartesian"
+  , "graphs"
+  , "protocols"
   ]
 
 main : IO ()
