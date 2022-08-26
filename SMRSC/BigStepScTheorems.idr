@@ -103,14 +103,14 @@ namespace MRSC_imp_NDSC'
     MRSC h c g -> NDSC h c g
   MRSC_imp_NDSC (MRSC_Fold f) = NDSC_Fold f
   MRSC_imp_NDSC (MRSC_Build nf nw i p) =
-    NDSC_Build nf i (pw_map p)
+    NDSC_Build nf i (pw_elem_map p)
     where
-    pw_map :
+    pw_elem_map :
       {cs : List a} -> {gs : List (Graph a)} ->
       (qs : Pointwise (MRSC (c :: h)) cs gs) ->
       Pointwise (NDSC (c :: h)) cs gs
-    pw_map [] = []
-    pw_map (q :: qs) = MRSC_imp_NDSC q :: pw_map qs
+    pw_elem_map [] = []
+    pw_elem_map (q :: qs) = MRSC_imp_NDSC q :: pw_elem_map qs
 
 --
 -- `naive-mrsc` is correct with respect to `_⊢MRSC_↪_`
@@ -206,14 +206,14 @@ namespace MRSC_correctness
 -}
 
   naive_mrsc_sound' : (s : ScWorld a) -> (w : BarWhistle a) ->
-    (h : List a) -> (b : Bar (dangerous w) h) -> (c : a) -> (g : Graph a) ->
+    (h : List a) -> (b : Bar (dangerous w) h) -> {c : a} -> {g : Graph a} ->
     (elem_g : Elem g (naive_mrsc' s w h b c)) -> MRSC @{s} @{w} h c g
-  naive_mrsc_sound' s w h b c g elem_g with (decIsFoldableToHistory s c h)
-    naive_mrsc_sound' s w h b c (Back c) Here | Yes f =
+  naive_mrsc_sound' s w h b elem_g with (decIsFoldableToHistory s c h)
+    naive_mrsc_sound' s w h b Here | Yes f =
       MRSC_Fold f
-    naive_mrsc_sound' s w h b c g (There elem_g_nil) | Yes f =
+    naive_mrsc_sound' s w h b (There elem_g_nil) | Yes f =
       absurd elem_g_nil
-    naive_mrsc_sound' s w h b c g elem_g | No nf with (decDangerous w h)
+    naive_mrsc_sound' s w h b elem_g | No nf with (decDangerous w h)
       _ | Yes d = absurd elem_g
       _ | No nd with (b)
         _ | Now d = void (nd d)
@@ -227,6 +227,17 @@ namespace MRSC_correctness
 
             Gs : List (Graph a)
             Gs = map (Forth c) Gss
+
+            helper4 : (cs, gs : _) ->
+              Elem gs (cartesian (map Step cs)) -> Pointwise (MRSC (c :: h)) cs gs
+            helper4 cs gs =
+              |~~ Elem gs (cartesian (map Step cs))
+              ~~> Pointwise Elem gs (map Step cs)
+                ... (cartesian_pw_elem gs (map (naive_mrsc' s w (c :: h) (bs c)) cs))
+              ~~> Pointwise (\c', gs' => Elem gs' (Step c')) cs gs
+                ... (pw_elem_map Step cs)
+              ~~> Pointwise (MRSC (c :: h)) cs gs
+                ... (map_pw (naive_mrsc_sound' s w (c :: h) (bs c)))
 
             helper1 : (gs' ** (Elem gs' Gss, g = Forth c gs')) -> MRSC h c g
 

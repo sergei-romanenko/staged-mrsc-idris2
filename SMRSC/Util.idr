@@ -209,7 +209,7 @@ filter-cong {p = p} {q = q} p≗q (x :: xs)
 public export
 data Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type where
   Nil  : Pointwise r [] []
-  (::) : {r : _} ->
+  (::) : {x, y, r : _} ->
     r x y -> Pointwise r xs ys -> Pointwise r (x :: xs) (y :: ys)
 
 public export
@@ -234,6 +234,22 @@ decPointwise dec (x :: xs) (y :: ys) with (dec x y)
   _ | No nr_x_y = No $ \(r_x_y :: _) => nr_x_y r_x_y
 
 {-
+map : R ⇒ S → Pointwise R ⇒ Pointwise S
+map R⇒S []            = []
+map R⇒S (Rxy ∷ Rxsys) = R⇒S Rxy ∷ map R⇒S Rxsys
+-}
+
+%hint
+export
+map_pw : {r, s : a -> b -> Type} ->
+  ({x, y : _} -> r x y -> s x y) ->
+  Pointwise r xs ys -> Pointwise s xs ys
+map_pw f [] = []
+map_pw f (rxy :: rxsys) = f rxy :: map_pw f rxsys
+
+
+{-
+
 public export
 Pointwise : (r : a -> b -> Type) -> List a -> List b -> Type
 Pointwise r xs ys = All (uncurry r) (zip xs ys)
@@ -345,7 +361,9 @@ concat↔∘Any↔ z g f xs =
   z ∈ map g (concat (map f xs))
   ∎
   where open ∼-Reasoning
+-}
 
+{-
 -- ∈*∘map
 
 ∈*∘map-> :
@@ -356,7 +374,14 @@ concat↔∘Any↔ z g f xs =
 ∈*∘map-> f [] {_ :: _} ()
 ∈*∘map-> f (x :: xs) (y∈fx :: ys∈*) =
   y∈fx :: ∈*∘map-> f xs ys∈*
+-}
 
+%hint
+export
+pw_elem_map : (f : a -> List b) -> (xs : List a) -> {ys : List b} ->
+  Pointwise Elem ys (map f xs) -> Pointwise (\x, y => Elem y (f x)) xs ys
+
+{-
 -- ∈*∘map←
 
 ∈*∘map← :
@@ -695,6 +720,8 @@ cartesian2_elem x xs (y :: ys) yss =
 
 -- cartesian_pw_elem
 
+%hint
+export
 cartesian_pw_elem :
   (xs : List a) -> (yss : List (List a)) ->
     Elem xs (cartesian yss) -> Pointwise Elem xs yss
