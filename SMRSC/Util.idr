@@ -319,7 +319,6 @@ decPointwise dec xs ys =
   to∘from x (ys :: yss) (here ())
   to∘from x (ys :: yss) (there p) = cong there (to∘from x yss p)
 
-
 -- concat↔∘Any↔
 
 concat↔∘Any↔ : {A B : Set}
@@ -375,12 +374,12 @@ map-∈↔ : ∀ {y xs} -> (∃ λ x -> x ∈ xs × y = f x) ↔ y ∈ map f xs
 -}
 
 export
-map_elem : (y : a) -> (xs : List a) -> Elem y (map f xs) -> (x ** (Elem x xs, y = f x))
+map_elem : (y : b) -> (xs : List a) -> Elem y (map f xs) -> (x ** (Elem x xs, y = f x))
 map_elem _ [] Here impossible
 map_elem _ [] (There x) impossible
 map_elem _ (x' :: xs) Here = (x' ** (Here, Refl))
 map_elem y (x' :: xs) (There elem_y) with (map_elem y xs elem_y)
-  _ | ((x ** (elem_x, y__fx))) = (x ** (There elem_x, y__fx))
+  _ | (x ** (elem_x, y__fx)) = (x ** (There elem_x, y__fx))
 
   -- map_elem y xs elem_y
 
@@ -454,7 +453,6 @@ cartesian2_nil : (xs : List a) ->
 cartesian2_nil [] = Refl
 cartesian2_nil (x :: xs) = cartesian2_nil xs
 
-
 {-
 -- ⊥↔[]∈cartesian2
 
@@ -474,9 +472,41 @@ cartesian2_nil (x :: xs) = cartesian2_nil xs
   [] ∈ (map (_::_ x) yss ++ cartesian2 xs yss)
   ∎
   where open ∼-Reasoning
+-}
+
+%hint
+elem_concat : (z, xs, ys : _) ->
+  Elem z (xs ++ ys) -> Either (Elem z xs) (Elem z ys)
+elem_concat z [] ys elem = Right elem
+elem_concat z (z :: xs) ys Here = Left Here
+elem_concat z (x :: xs) ys (There elem) with (elem_concat z xs ys elem)
+  _ | Left h = Left (There h)
+  _ | Right h = Right h
+
+%hint
+not_elem_nil_map : (x : a) -> (yss : List (List a)) ->
+  Not (Elem [] (map (x ::) yss))
+not_elem_nil_map x [] elem = absurd elem
+not_elem_nil_map x (ys :: yss) (There elem) =
+  not_elem_nil_map x yss elem
+
+%hint
+not_elem_nil_cartesian2 : (xs, yss : _) -> Not (Elem [] (cartesian2 xs yss))
+not_elem_nil_cartesian2 [] yss = absurd
+-- not_elem_nil_cartesian2 (x :: xs) yss elem = ?not_elem_nil_cartesian2_rhs_1
+not_elem_nil_cartesian2 (x :: xs) yss =
+  |~~ Elem [] (cartesian2 (x :: xs) yss)
+  ~~> Elem [] (map (x ::) yss ++ cartesian2 xs yss)
+    ... id
+  ~~> Either (Elem [] (map (x ::) yss)) (Elem [] (cartesian2 xs yss))
+    ... (elem_concat [] (map (x ::) yss) (cartesian2 xs yss))
+  ~~> Void
+    ... (either (not_elem_nil_map x yss) (not_elem_nil_cartesian2 xs yss))
+
 
 -- Some important properties of `cartesian`
 
+{-
 -- ≡×∈->map::
 
 ≡×∈->map:: : ∀ {A : Set} {x : A} {xs : List A} {y : A} {yss : List (List A)} ->
@@ -529,7 +559,58 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
   from∘to {yss = ys :: yss} (here refl) = refl
   from∘to {yss = ys :: yss} (there x::xs∈) with map::->≡×∈ x::xs∈ | from∘to x::xs∈
   ... | refl , xs∈yss | ft rewrite ft = refl
+-}
 
+%hint
+eq_elem_map : (x : a) -> (xs : List a) -> (y : a) -> (yss : List (List a)) ->
+  Elem (x :: xs) (map (y ::) yss) -> (x = y, Elem xs yss)
+eq_elem_map x xs y [] elem = absurd elem
+eq_elem_map x xs x (xs :: yss) Here = (Refl, Here)
+eq_elem_map x xs y (ys :: yss) (There elem) with (eq_elem_map x xs y yss elem)
+  _ | (x__y, elem_xs_yss) = (x__y, There elem_xs_yss)
+
+%hint
+elem_cartesian2 : (x : a) -> (xs, ys : List a) -> (yss : List (List a)) ->
+  Elem (x :: xs) (cartesian2 ys yss) -> (Elem x ys, Elem xs yss)
+elem_cartesian2 x xs [] yss = absurd
+elem_cartesian2 x xs (y :: ys) yss =
+  |~~ Elem (x :: xs) (cartesian2 (y :: ys) yss)
+  ~~> Elem (x :: xs) (map (y ::) yss ++ cartesian2 ys yss)
+    ... id
+  ~~> Either (Elem (x :: xs) (map (y ::) yss)) (Elem (x :: xs) (cartesian2 ys yss))
+    ... (elem_concat (x :: xs) (map (\arg => y :: arg) yss) (cartesian2 ys yss))
+  ~~> Either (x = y, Elem xs yss) (Elem x ys, Elem xs yss)
+    ... (bimap (eq_elem_map x xs y yss) (elem_cartesian2 x xs ys yss))
+  ~~> (Either (x = y) (Elem x ys), Elem xs yss)
+    ... (either (bimap Left id) (bimap Right id))
+  ~~> (Elem x (y :: ys), Elem xs yss)
+    ... (bimap (either (\x__y => replace {p = Elem x . (:: ys)} x__y Here) There) id)
+
+%hint
+either_eq_elem : Either (x = y) (Elem x ys) -> Elem x (y :: ys)
+either_eq_elem (Left Refl) = Here
+either_eq_elem (Right elem) = There elem
+
+%hint
+cartesian2_elem :
+  (x : a) -> (xs, ys : List a) -> (yss : List (List a)) ->
+  Elem (x :: xs) (cartesian2 ys yss) -> (Elem x ys, Elem xs yss)
+cartesian2_elem x xs [] yss = \elem => absurd elem
+cartesian2_elem x xs (y :: ys) yss =
+  |~~ Elem (x :: xs) (cartesian2 (y :: ys) yss)
+  ~~> Elem (x :: xs) (map (y ::) yss ++ cartesian2 ys yss)
+    ... id
+  ~~> Either (Elem (x :: xs) (map (y ::) yss)) (Elem (x :: xs) (cartesian2 ys yss))
+    ... (elem_concat (x :: xs) (map (y ::) yss) (cartesian2 ys yss))
+  ~~> Either (x = y, Elem xs yss) (Elem x ys, Elem xs yss)
+    ... (bimap (eq_elem_map x xs y yss) (elem_cartesian2 x xs ys yss))
+  ~~> (Either (x = y) (Elem x ys),  Elem xs yss)
+    ... (either (bimap Left id) (bimap Right id))
+  ~~> (Elem x (y :: ys), Elem xs yss)
+    -- ... (bimap either_eq_elem id)
+    ... (bimap (either (\x__y => replace {p = Elem x . (:: ys)} x__y Here) There) id)
+
+{-
 -- ∈∈↔::cartesian
 
 ∈∈↔::cartesian2 :
@@ -606,11 +687,33 @@ map::->≡×∈ {yss = ys :: yss} (there x::xs∈) =
   to∘from (x∈ys , xs∈*yss) = refl
   from∘to : (p : Pointwise.Rel _∈_ (x :: xs) (ys :: yss)) -> to (from p) = p
   from∘to (x∈ys :: xs∈*yss) = refl
+-}
 
 --
 -- A proof of correctness of `cartesian`
 -- with respect to `Pointwise.Rel _∈_`
 
+-- cartesian_pw_elem
+
+cartesian_pw_elem :
+  (xs : List a) -> (yss : List (List a)) ->
+    Elem xs (cartesian yss) -> Pointwise Elem xs yss
+cartesian_pw_elem [] [] elem = []
+cartesian_pw_elem [] (ys :: yss) elem =
+  void $ (not_elem_nil_cartesian2 ys (cartesian yss)) elem
+cartesian_pw_elem (x :: xs) [] (There there) = absurd there
+cartesian_pw_elem (x :: xs) (ys :: yss) elem = elem |>
+  |~~ Elem (x :: xs) (cartesian (ys :: yss))
+  ~~> Elem (x :: xs) (cartesian2 ys (cartesian yss))
+    ... id
+  ~~> (Elem x ys, Elem xs (cartesian yss))
+    ... (elem_cartesian2 x xs ys (cartesian yss))
+  ~~> (Elem x ys, Pointwise Elem xs yss)
+    ... (bimap id (cartesian_pw_elem xs yss))
+  ~~> Pointwise Elem (x :: xs) (ys :: yss)
+    ... uncurry (::)
+
+{-
 -- ∈*↔∈cartesian
 
 ∈*↔∈cartesian :

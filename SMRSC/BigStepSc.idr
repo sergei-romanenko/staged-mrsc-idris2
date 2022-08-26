@@ -181,6 +181,11 @@ data MRSC : {auto s : ScWorld a} -> {auto w : BarWhistle a} ->
 --
 
 public export
+concatMap' : (f : a -> List b) -> List a -> List b
+concatMap' f [] = []
+concatMap' f (x :: xs) = f x ++ concatMap' f xs
+
+public export
 naive_mrsc' : (s : ScWorld a) -> (w : BarWhistle a) ->
   (h : List a) -> (b : Bar (dangerous w) h) -> (c : a) -> List (Graph a)
 naive_mrsc' s w h b c with (decIsFoldableToHistory s c h)
@@ -191,8 +196,8 @@ naive_mrsc' s w h b c with (decIsFoldableToHistory s c h)
       _ | Now d = void (nd d)
       _ | Later bs =
         map (Forth c)
-          (concatMap (cartesian . map (naive_mrsc' s w (c :: h) (bs c)))
-                     (develop s c))
+          (concatMap' (cartesian . map (naive_mrsc' s w (c :: h) (bs c)))
+                      (develop s c))
 
 public export
 naive_mrsc : (s : ScWorld a) -> (w : BarWhistle a) -> (c : a) -> List (Graph a)

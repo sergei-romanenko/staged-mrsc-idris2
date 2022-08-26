@@ -217,26 +217,26 @@ namespace MRSC_correctness
       _ | Yes d = absurd elem_g
       _ | No nd with (b)
         _ | Now d = void (nd d)
-        _ | Later bs = ?helper elem_g
+        _ | Later bs = helper elem_g
           where
             Step : (c' : a) -> List (Graph a)
             Step = naive_mrsc' s w (c :: h) (bs c)
 
             Gss : List (List (Graph a))
-            Gss = concat (map (cartesian . map Step) (develop s c))
+            Gss = concatMap' (cartesian . map Step) (develop s c)
 
             Gs : List (Graph a)
             Gs = map (Forth c) Gss
 
-            -- h1 : ?q
-            -- h1 = map_elem g Gs elem_g
+            helper1 : (gs' ** (Elem gs' Gss, g = Forth c gs')) -> MRSC h c g
 
             helper : Elem g (map (Forth c) Gss) -> MRSC h c g
-            helper = ?rhs
-              -- |~~ Elem g (map (Forth c) Gss)
-              -- ~~> (gs' ** (Elem gs' Gss, g = Forth c gs'))
-              --   ... (map_elem ?j2 Gss) -- ↔⟨ sym $ map-∈↔ ⟩
-              -- ~~> MRSC h c g             ... ( ?helper1 )
+            helper =
+              |~~ Elem g (map (Forth c) Gss)
+              ~~> (gs' ** (Elem gs' Gss, g = Forth c gs'))
+                ... (map_elem g Gss)
+              ~~> MRSC h c g
+                ... ( helper1 )
 
   --
   -- naive-mrsc-sound
